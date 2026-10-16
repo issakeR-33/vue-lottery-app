@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const student = {
-  fullName: 'issakeR',
-  group: 'Чернівецький національний університет імені Юрія Федьковича',
+  fullName: 'Мельник Іван Іванович',
+  group: 'Група 343А(1)',
+  university: 'Чернівецький національний університет імені Юрія Федьковича',
   github: 'https://github.com/issakeR-33',
 }
 
@@ -19,7 +20,7 @@ const skills = [
   <div class="card">
     <div class="card-body">
       <h1 class="page-title">{{ student.fullName }}</h1>
-      <p class="subtitle">{{ student.group }}</p>
+      <p class="subtitle">{{ student.group }} · {{ student.university }}</p>
 
       <h2 class="section-title">Technical skills</h2>
       <div class="skills">
