@@ -14,6 +14,7 @@ defineProps<{
 const emit = defineEmits<{
   sort: [field: SortField]
   search: [query: string]
+  delete: [user: User]
 }>()
 
 const sortButtons: { field: SortField; label: string; icon: string }[] = [
@@ -55,15 +56,39 @@ const sortButtons: { field: SortField; label: string; icon: string }[] = [
           <th scope="col">Age</th>
           <th scope="col">Email</th>
           <th scope="col">Phone number</th>
+          <th scope="col" class="actions-cell">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(user, index) in users" :key="user.id">
           <td class="index-cell">{{ startIndex + index + 1 }}</td>
-          <td class="text-cell" :title="fullName(user)">{{ fullName(user) }}</td>
+          <td class="text-cell" :title="fullName(user)">
+            <RouterLink :to="{ name: 'user', params: { id: user.id } }" class="name-link">
+              {{ fullName(user) }}
+            </RouterLink>
+          </td>
           <td>{{ user.age }}</td>
           <td class="text-cell" :title="user.email">{{ user.email }}</td>
           <td>{{ user.phone }}</td>
+          <td class="actions-cell">
+            <div class="actions">
+              <RouterLink
+                :to="{ name: 'user-edit', params: { id: user.id } }"
+                class="table-btn table-btn--small table-btn--edit"
+              >
+                <i class="bi bi-pencil"></i>
+                Редагувати дані
+              </RouterLink>
+              <button
+                type="button"
+                class="table-btn table-btn--small table-btn--delete"
+                @click="emit('delete', user)"
+              >
+                <i class="bi bi-trash"></i>
+                Видалити учасника
+              </button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -137,6 +162,50 @@ const sortButtons: { field: SortField; label: string; icon: string }[] = [
 
 .table-btn:hover {
   background-color: #f1f3f5;
+}
+
+.name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.name-link:hover {
+  color: var(--bs-primary);
+  text-decoration: underline;
+}
+
+.actions-cell {
+  text-align: right;
+}
+
+/* у вузькому макеті з дизайну кнопки стоять одна під одною */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.table-btn--small {
+  min-height: 0;
+  padding: 5px 10px;
+  font-size: 0.8125rem;
+  text-decoration: none;
+}
+
+.table-btn--edit:hover {
+  color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary);
+}
+
+.table-btn--delete {
+  color: #dc3545;
+}
+
+.table-btn--delete:hover {
+  background-color: #fdecee;
+  border-color: #dc3545;
 }
 
 .table-btn--active {

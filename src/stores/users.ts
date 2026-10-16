@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import type { LocationQuery } from 'vue-router'
 import { HttpError } from '@/api/http-client'
 import { ServiceProvider } from '@/services/service-provider'
 import type { Page } from '@/services/interfaces'
@@ -43,6 +44,18 @@ export const useUsersStore = defineStore('users', () => {
   const updated = ref<Record<number, User>>(saved.updated)
   const deletedIds = ref<number[]>(saved.deletedIds)
   const winners = ref<User[]>([])
+  // query списку (сторінка, пошук), щоб повернутися на той самий стан зі сторінки учасника
+  const listQuery = ref<LocationQuery>({})
+  const notice = ref<string | null>(null)
+  let noticeTimer: ReturnType<typeof setTimeout> | undefined
+
+  function notify(message: string): void {
+    notice.value = message
+    clearTimeout(noticeTimer)
+    noticeTimer = setTimeout(() => {
+      notice.value = null
+    }, 4000)
+  }
 
   // deep, щоб у localStorage потрапляли й зміни всередині масивів та об'єкта
   watch(
@@ -149,6 +162,9 @@ export const useUsersStore = defineStore('users', () => {
     updated,
     deletedIds,
     winners,
+    listQuery,
+    notice,
+    notify,
     applyLocalChanges,
     getUser,
     createUser,

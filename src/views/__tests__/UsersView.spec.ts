@@ -14,7 +14,12 @@ async function mountAt(url: string) {
     history: createMemoryHistory(),
     routes: [
       { path: '/users', name: 'users', component: UsersView },
-      { path: '/users/:id', name: 'user', component: { template: '<div />' } },
+      {
+        path: '/users/:id',
+        name: 'user',
+        component: { template: '<div />' },
+        children: [{ path: 'edit', name: 'user-edit', component: { template: '<div />' } }],
+      },
     ],
   })
   await router.push(url)

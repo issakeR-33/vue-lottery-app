@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { useId } from 'vue'
 
+// решта атрибутів (autocomplete, min, onBlur від VeeValidate) потрапляє на сам input
+defineOptions({ inheritAttrs: false })
+
 defineProps<{
   label: string
   type?: string
   placeholder?: string
-  max?: string
   error?: string
   valid?: boolean
 }>()
 
-const model = defineModel<string>({ required: true })
+const model = defineModel<string | number | undefined>({ required: true })
 const inputId = useId()
 </script>
 
@@ -20,11 +22,11 @@ const inputId = useId()
     <input
       :id="inputId"
       v-model="model"
+      v-bind="$attrs"
       :type="type ?? 'text'"
       class="form-control"
       :class="{ 'is-invalid': error, 'is-valid': valid && !error }"
       :placeholder="placeholder"
-      :max="max"
       :aria-invalid="Boolean(error)"
     />
     <div v-if="error" class="invalid-feedback">{{ error }}</div>

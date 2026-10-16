@@ -28,9 +28,31 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: '/users',
-    name: 'users',
-    component: () => import('@/views/UsersView.vue'),
-    meta: { title: 'Users' },
+    children: [
+      {
+        path: '',
+        name: 'users',
+        component: () => import('@/views/UsersView.vue'),
+        meta: { title: 'Users' },
+      },
+      {
+        // динамічний сегмент, id передається в компонент як prop
+        path: ':id(\\d+)',
+        name: 'user',
+        component: () => import('@/views/UserDetailsView.vue'),
+        props: true,
+        meta: { title: 'Профіль учасника' },
+        children: [
+          {
+            // вкладений маршрут рендериться в <RouterView> сторінки учасника
+            path: 'edit',
+            name: 'user-edit',
+            component: () => import('@/views/UserEditView.vue'),
+            meta: { title: 'Редагування учасника' },
+          },
+        ],
+      },
+    ],
   },
   {
     path: '/:pathMatch(.*)*',
@@ -44,7 +66,9 @@ export function createAppRouter(history: RouterHistory = createWebHashHistory())
   return createRouter({
     history,
     routes,
-    scrollBehavior: () => ({ top: 0 }),
+    // зміна лише query (пошук, сторінка списку) не прокручує сторінку вгору
+    scrollBehavior: (to, from, savedPosition) =>
+      savedPosition ?? (to.path === from.path ? false : { top: 0 }),
   })
 }
 

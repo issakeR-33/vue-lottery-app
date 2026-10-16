@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ServiceProvider } from '@/services/service-provider'
 import type { Page } from '@/services/interfaces'
-import type { User } from '@/types/user'
+import { fullName, type User } from '@/types/user'
+import type { UserFormValues } from '@/validation/schemas'
 import { useUsersStore } from '@/stores/users'
 import { PAGE_SIZE, useUsersQuery } from '@/composables/useUsersQuery'
 import WinnersList from '@/components/WinnersList.vue'
 import UsersTable from '@/components/users/UsersTable.vue'
 import BasePagination from '@/components/BasePagination.vue'
+import UserForm from '@/components/users/UserForm.vue'
+import ConfirmDeleteModal from '@/components/users/ConfirmDeleteModal.vue'
 
 const store = useUsersStore()
 const { page, search, sort, order, params, setPage, setSearch, toggleSort } = useUsersQuery()
@@ -42,6 +46,56 @@ const visiblePage = computed(() =>
   result.value ? store.applyLocalChanges(result.value, search.value) : null,
 )
 const users = computed(() => visiblePage.value?.items ?? [])
+
+// запам'ятовуємо стан списку, щоб сторінка учасника повертала саме сюди
+const route = useRoute()
+watch(
+  () => route.query,
+  (query) => {
+    store.listQuery = query
+  },
+  { immediate: true },
+)
+
+const form = useTemplateRef('form')
+const isCreating = ref(false)
+const createError = ref<string | null>(null)
+
+async function createUser(values: UserFormValues): Promise<void> {
+  isCreating.value = true
+  createError.value = null
+  try {
+    const user = await store.createUser(values)
+    form.value?.reset()
+    store.notify(`Учасника ${fullName(user)} додано`)
+  } catch (e) {
+    createError.value = (e as Error).message
+  } finally {
+    isCreating.value = false
+  }
+}
+
+const deleting = ref<User | null>(null)
+const isDeleteOpen = ref(false)
+const isDeleting = ref(false)
+
+function askDelete(user: User): void {
+  deleting.value = user
+  isDeleteOpen.value = true
+}
+
+async function deleteUser(user: User): Promise<void> {
+  isDeleting.value = true
+  try {
+    await store.deleteUser(user.id)
+    store.notify(`Учасника ${fullName(user)} видалено`)
+  } catch (e) {
+    error.value = (e as Error).message
+  } finally {
+    isDeleting.value = false
+    isDeleteOpen.value = false
+  }
+}
 </script>
 
 <template>
@@ -55,6 +109,23 @@ const users = computed(() => visiblePage.value?.items ?? [])
 
     <div class="card">
       <div class="card-body">
+        <h5 class="card-title">REGISTER FORM</h5>
+        <p class="hint">Please fill in all the fields.</p>
+        <UserForm
+          ref="form"
+          mode="create"
+          submit-label="Save"
+          :submitting="isCreating"
+          :server-error="createError"
+          @submit="createUser"
+        />
+      </div>
+    </div>
+
+    <div v-if="store.notice" class="alert alert-success" role="status">{{ store.notice }}</div>
+
+    <div class="card">
+      <div class="card-body">
         <UsersTable
           :users="users"
           :start-index="(page - 1) * PAGE_SIZE"
@@ -63,6 +134,7 @@ const users = computed(() => visiblePage.value?.items ?? [])
           :order="order"
           @sort="toggleSort"
           @search="setSearch"
+          @delete="askDelete"
         />
 
         <div v-if="isLoading" class="state" role="status">
@@ -94,10 +166,29 @@ const users = computed(() => visiblePage.value?.items ?? [])
         </div>
       </div>
     </div>
+
+    <ConfirmDeleteModal
+      v-model:open="isDeleteOpen"
+      :user="deleting"
+      :deleting="isDeleting"
+      @confirm="deleteUser"
+    />
   </div>
 </template>
 
 <style scoped>
+.card-title {
+  margin-bottom: 2px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.hint {
+  margin-bottom: 18px;
+  color: #98a6ad;
+  font-size: 1rem;
+}
+
 .state {
   display: flex;
   align-items: center;
