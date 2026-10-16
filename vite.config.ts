@@ -18,6 +18,15 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // GitHub Pages (Jekyll) не віддає файли, що починаються з "_",
+        // а Vite так називає спільний чанк _plugin-vue_export-helper
+        chunkFileNames: (chunk) => `assets/${chunk.name.replace(/^_+/, '')}-[hash].js`,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
