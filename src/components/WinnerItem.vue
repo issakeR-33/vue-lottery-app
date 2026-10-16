@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Participant } from '../types/Participant'
+import { fullName, type User } from '@/types/user'
 
 defineProps<{
-  winner: Participant
+  winner: User
 }>()
 
 defineEmits<{
@@ -12,7 +12,7 @@ defineEmits<{
 
 <template>
   <span class="winner-chip">
-    {{ winner.name }}
+    {{ fullName(winner) }}
     <button
       type="button"
       class="winner-chip__remove"

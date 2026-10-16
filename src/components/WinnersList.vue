@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Participant } from '../types/Participant'
+import type { User } from '@/types/user'
 import WinnerItem from './WinnerItem.vue'
 import BaseButton from './BaseButton.vue'
 
 defineProps<{
-  winners: Participant[]
+  winners: User[]
   canPickWinner: boolean
 }>()
 

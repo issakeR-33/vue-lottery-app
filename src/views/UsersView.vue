@@ -1,101 +1,135 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { Participant } from '@/types/Participant'
-import type { ParticipantFormValues } from '@/utils/participantValidation'
-import { nextParticipantId } from '@/utils/participants'
+import { ServiceProvider } from '@/services/service-provider'
+import type { Page } from '@/services/interfaces'
+import type { User } from '@/types/user'
+import { useUsersStore } from '@/stores/users'
+import { PAGE_SIZE, useUsersQuery } from '@/composables/useUsersQuery'
 import WinnersList from '@/components/WinnersList.vue'
-import RegistrationForm from '@/components/RegistrationForm.vue'
-import ParticipantsTable from '@/components/ParticipantsTable.vue'
+import UsersTable from '@/components/users/UsersTable.vue'
+import BasePagination from '@/components/BasePagination.vue'
 
-const STORAGE_KEY = 'vue-lottery-participants'
-const MAX_WINNERS = 3
+const store = useUsersStore()
+const { page, search, sort, order, params, setPage, setSearch, toggleSort } = useUsersQuery()
 
-function loadParticipants(): Participant[] {
+const result = ref<Page<User> | null>(null)
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+
+// відповідь застарілого запиту (користувач уже перейшов на іншу сторінку) ігнорується
+let lastRequest = 0
+
+async function loadUsers(): Promise<void> {
+  const request = ++lastRequest
+  isLoading.value = true
+  error.value = null
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed: unknown = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? (parsed as Participant[]) : []
-  } catch {
-    return []
+    const data = search.value
+      ? await ServiceProvider.users.search(search.value, params.value)
+      : await ServiceProvider.users.getAll(params.value)
+    if (request === lastRequest) result.value = data
+  } catch (e) {
+    if (request === lastRequest) error.value = (e as Error).message
+  } finally {
+    if (request === lastRequest) isLoading.value = false
   }
 }
 
-// відновлення при завантаженні застосунку
-const participants = ref<Participant[]>(loadParticipants())
+// дані перезавантажуються щоразу, коли змінюються query-параметри
+watch(params, loadUsers, { immediate: true })
 
-// deep, щоб зберігати і редагування окремих учасників, а не лише заміну масиву
-watch(
-  participants,
-  (value) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
-  },
-  { deep: true },
+const visiblePage = computed(() =>
+  result.value ? store.applyLocalChanges(result.value, search.value) : null,
 )
-
-const winnerIds = ref<number[]>([])
-
-const winners = computed(() =>
-  winnerIds.value
-    .map((id) => participants.value.find((p) => p.id === id))
-    .filter((p): p is Participant => Boolean(p)),
-)
-
-const availableForWinning = computed(() =>
-  participants.value.filter((p) => !winnerIds.value.includes(p.id)),
-)
-
-const canPickWinner = computed(
-  () => winnerIds.value.length < MAX_WINNERS && availableForWinning.value.length > 0,
-)
-
-function pickWinner(): void {
-  if (!canPickWinner.value) {
-    return
-  }
-
-  const pool = availableForWinning.value
-  const chosen = pool[Math.floor(Math.random() * pool.length)]
-  if (chosen) {
-    winnerIds.value.push(chosen.id)
-  }
-}
-
-function removeWinner(id: number): void {
-  winnerIds.value = winnerIds.value.filter((winnerId) => winnerId !== id)
-}
-
-function registerParticipant(values: ParticipantFormValues): void {
-  participants.value.push({ id: nextParticipantId(participants.value), ...values })
-}
-
-function updateParticipant(updated: Participant): void {
-  const index = participants.value.findIndex((p) => p.id === updated.id)
-  if (index !== -1) {
-    participants.value[index] = updated
-  }
-}
-
-function deleteParticipant(id: number): void {
-  participants.value = participants.value.filter((p) => p.id !== id)
-  removeWinner(id)
-}
+const users = computed(() => visiblePage.value?.items ?? [])
 </script>
 
 <template>
   <div class="users-page">
     <WinnersList
-      :winners="winners"
-      :can-pick-winner="canPickWinner"
-      @pick="pickWinner"
-      @remove="removeWinner"
+      :winners="store.winners"
+      :can-pick-winner="store.canPickWinner(users)"
+      @pick="store.pickWinner(users)"
+      @remove="store.removeWinner"
     />
 
-    <RegistrationForm :participants="participants" @register="registerParticipant" />
+    <div class="card">
+      <div class="card-body">
+        <UsersTable
+          :users="users"
+          :start-index="(page - 1) * PAGE_SIZE"
+          :search="search"
+          :sort="sort"
+          :order="order"
+          @sort="toggleSort"
+          @search="setSearch"
+        />
 
-    <ParticipantsTable
-      :participants="participants"
-      @update="updateParticipant"
-      @delete="deleteParticipant"
-    />
+        <div v-if="isLoading" class="state" role="status">
+          <span class="spinner-border spinner-border-sm state__spinner"></span>
+          Завантаження...
+        </div>
+        <div v-else-if="error" class="alert alert-danger state-alert" role="alert">
+          Не вдалося завантажити учасників: {{ error }}
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-danger state-alert__retry"
+            @click="loadUsers"
+          >
+            Спробувати ще
+          </button>
+        </div>
+        <p v-else-if="users.length === 0" class="state">
+          {{ search ? 'Нікого не знайдено' : 'Список учасників пустий' }}
+        </p>
+
+        <div v-if="visiblePage" class="users-page__footer">
+          <span class="users-page__total">Усього: {{ visiblePage.total }}</span>
+          <BasePagination
+            :page="page"
+            :total="visiblePage.total"
+            :page-size="PAGE_SIZE"
+            @change="setPage"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 24px 0 8px;
+  color: #6c757d;
+}
+
+.state__spinner {
+  color: var(--bs-primary);
+}
+
+.state-alert__retry {
+  margin-left: 8px;
+}
+
+.state-alert {
+  margin: 16px 0 0;
+}
+
+.users-page__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.users-page__total {
+  color: #98a6ad;
+}
+</style>
