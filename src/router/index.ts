@@ -4,11 +4,17 @@ import {
   type RouteRecordRaw,
   type RouterHistory,
 } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { checkAccess } from './guards'
 
 declare module 'vue-router' {
   interface RouteMeta {
     title?: string
     layout?: 'default' | 'auth'
+    /** Лише для авторизованих, діє й на вкладені маршрути. */
+    requiresAuth?: boolean
+    /** Лише для гостей (сторінка логіну). */
+    guestOnly?: boolean
   }
 }
 
@@ -28,6 +34,7 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: '/users',
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -55,6 +62,12 @@ export const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: 'Login', layout: 'auth', guestOnly: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),
@@ -79,6 +92,9 @@ export function pageTitle(title?: string): string {
 }
 
 export const router = createAppRouter()
+
+// navigation guard: /users і вкладені сторінки лише після входу, /login лише для гостей
+router.beforeEach((to) => checkAccess(to, useAuthStore().isAuthenticated))
 
 // заголовок вкладки береться з meta.title сторінки
 router.afterEach((to) => {

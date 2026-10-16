@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useRoute, type RouteLocationRaw } from 'vue-router'
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 interface NavItem {
   label: string
@@ -15,9 +16,16 @@ const items: NavItem[] = [
 ]
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
 
 function inSection(item: NavItem): boolean {
   return Boolean(item.section && route.path.startsWith(item.section))
+}
+
+function logout(): void {
+  auth.logout()
+  router.push({ name: 'login' })
 }
 </script>
 
@@ -40,6 +48,16 @@ function inSection(item: NavItem): boolean {
         {{ item.label }}
       </a>
     </RouterLink>
+
+    <div class="navigation__auth">
+      <template v-if="auth.isAuthenticated">
+        <span class="navigation__user" :title="auth.user?.email">
+          <i class="bi bi-person-circle"></i> {{ auth.user?.firstName }}
+        </span>
+        <button type="button" class="btn btn-outline-primary btn-sm" @click="logout">Logout</button>
+      </template>
+      <RouterLink v-else :to="{ name: 'login' }" class="btn btn-primary btn-sm">Login</RouterLink>
+    </div>
   </nav>
 </template>
 
@@ -47,6 +65,7 @@ function inSection(item: NavItem): boolean {
 .navigation {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px;
 }
 
@@ -65,5 +84,16 @@ function inSection(item: NavItem): boolean {
 .navigation__link--active {
   color: var(--bs-primary);
   border-bottom-color: var(--bs-primary);
+}
+
+.navigation__auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 12px;
+}
+
+.navigation__user {
+  color: #777;
 }
 </style>
