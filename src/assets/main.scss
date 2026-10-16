@@ -1,0 +1,34 @@
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/root';
+@import 'bootstrap/scss/reboot';
+@import 'bootstrap/scss/type';
+@import 'bootstrap/scss/forms';
+@import 'bootstrap/scss/buttons';
+@import 'bootstrap/scss/card';
+@import 'bootstrap/scss/tables';
+@import 'bootstrap/scss/modal';
+@import 'bootstrap/scss/close';
+@import 'bootstrap/scss/transitions';
+
+body {
+  background-color: #f4f4f4;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.card-body {
+  padding: 32px;
+}
+
+.btn {
+  padding: 10px 24px;
+  font-size: 1rem;
+}
