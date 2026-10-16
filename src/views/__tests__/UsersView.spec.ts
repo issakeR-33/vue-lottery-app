@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import App from '../App.vue'
-import type { Participant } from '../types/Participant'
+import UsersView from '../UsersView.vue'
+import type { Participant } from '@/types/Participant'
 
 const STORAGE_KEY = 'vue-lottery-participants'
 
@@ -21,7 +21,7 @@ function newWinnerButton(wrapper: ReturnType<typeof mount>) {
   return button
 }
 
-describe('App', () => {
+describe('UsersView', () => {
   beforeEach(() => {
     localStorage.clear()
   })
@@ -31,13 +31,13 @@ describe('App', () => {
   })
 
   it('disables New winner while there are no participants', () => {
-    const wrapper = mount(App)
+    const wrapper = mount(UsersView)
     expect(newWinnerButton(wrapper).attributes('disabled')).toBeDefined()
   })
 
   it('restores participants from localStorage and picks at most three unique winners', async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([1, 2, 3, 4, 5].map(participant)))
-    const wrapper = mount(App)
+    const wrapper = mount(UsersView)
     const button = newWinnerButton(wrapper)
 
     for (let i = 0; i < 5; i++) {
@@ -51,7 +51,7 @@ describe('App', () => {
   })
 
   it('saves a newly registered participant to localStorage', async () => {
-    const wrapper = mount(App)
+    const wrapper = mount(UsersView)
     const inputs = wrapper.findAll('.form-card input')
     const values = ['Олена', '2000-05-12', 'olena@example.com', '+380671234567']
     for (const [index, value] of values.entries()) {
