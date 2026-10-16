@@ -8,6 +8,7 @@ import {
 declare module 'vue-router' {
   interface RouteMeta {
     title?: string
+    layout?: 'default' | 'auth'
   }
 }
 
@@ -47,4 +48,15 @@ export function createAppRouter(history: RouterHistory = createWebHashHistory())
   })
 }
 
+const APP_NAME = 'Vue Lottery'
+
+export function pageTitle(title?: string): string {
+  return title ? `${title} · ${APP_NAME}` : APP_NAME
+}
+
 export const router = createAppRouter()
+
+// заголовок вкладки береться з meta.title сторінки
+router.afterEach((to) => {
+  document.title = pageTitle(to.meta.title)
+})
