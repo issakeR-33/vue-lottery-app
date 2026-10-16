@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { Participant } from './types/Participant'
 import type { ParticipantFormValues } from './utils/participantValidation'
 import { nextParticipantId } from './utils/participants'
@@ -7,9 +7,30 @@ import WinnersList from './components/WinnersList.vue'
 import RegistrationForm from './components/RegistrationForm.vue'
 import ParticipantsTable from './components/ParticipantsTable.vue'
 
+const STORAGE_KEY = 'vue-lottery-participants'
 const MAX_WINNERS = 3
 
-const participants = ref<Participant[]>([])
+function loadParticipants(): Participant[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? (parsed as Participant[]) : []
+  } catch {
+    return []
+  }
+}
+
+// відновлення при завантаженні застосунку
+const participants = ref<Participant[]>(loadParticipants())
+
+// deep, щоб зберігати і редагування окремих учасників, а не лише заміну масиву
+watch(
+  participants,
+  (value) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+  },
+  { deep: true },
+)
 
 const winnerIds = ref<number[]>([])
 
