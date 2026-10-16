@@ -67,6 +67,13 @@ function removeWinner(id: number): void {
 function registerParticipant(values: ParticipantFormValues): void {
   participants.value.push({ id: nextParticipantId(participants.value), ...values })
 }
+
+function updateParticipant(updated: Participant): void {
+  const index = participants.value.findIndex((p) => p.id === updated.id)
+  if (index !== -1) {
+    participants.value[index] = updated
+  }
+}
 </script>
 
 <template>
@@ -80,6 +87,6 @@ function registerParticipant(values: ParticipantFormValues): void {
 
     <RegistrationForm :participants="participants" @register="registerParticipant" />
 
-    <ParticipantsTable :participants="participants" />
+    <ParticipantsTable :participants="participants" @update="updateParticipant" />
   </main>
 </template>
