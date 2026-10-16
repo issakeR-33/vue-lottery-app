@@ -50,4 +50,19 @@ describe('RegistrationForm', () => {
     expect(wrapper.emitted('register')).toBeUndefined()
     expect(wrapper.text()).toContain('Учасник з такою поштою вже зареєстрований')
   })
+
+  it('marks fields valid or invalid after the first save and re-checks them while typing', async () => {
+    const wrapper = mount(RegistrationForm, { props: { participants: [] } })
+    await fill(wrapper, ['Олена', '', '', ''])
+    const inputs = () => wrapper.findAll('input')
+
+    expect(inputs()[0]?.classes()).not.toContain('is-valid')
+
+    await wrapper.get('button').trigger('click')
+    expect(inputs()[0]?.classes()).toContain('is-valid')
+    expect(inputs()[2]?.classes()).toContain('is-invalid')
+
+    await inputs()[2]?.setValue('olena@example.com')
+    expect(inputs()[2]?.classes()).toContain('is-valid')
+  })
 })

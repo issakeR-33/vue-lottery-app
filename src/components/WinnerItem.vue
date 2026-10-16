@@ -13,7 +13,14 @@ defineEmits<{
 <template>
   <span class="winner-chip">
     {{ winner.name }}
-    <button type="button" class="winner-chip__remove" @click="$emit('remove', winner.id)">×</button>
+    <button
+      type="button"
+      class="winner-chip__remove"
+      @click="$emit('remove', winner.id)"
+      aria-label="Прибрати переможця"
+    >
+      x
+    </button>
   </span>
 </template>
 
@@ -21,21 +28,23 @@ defineEmits<{
 .winner-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background-color: #0d6efd;
+  gap: 8px;
+  padding: 2px 6px;
   color: #fff;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: var(--bs-primary);
+  border-radius: 2px;
 }
 
 .winner-chip__remove {
+  padding: 0 2px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
   background: none;
   border: none;
-  color: #fff;
-  font-size: 1rem;
-  line-height: 1;
   cursor: pointer;
-  padding: 0;
 }
 </style>

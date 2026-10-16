@@ -15,16 +15,17 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="card winners-card">
+  <div class="card">
     <div class="card-body winners-body">
+      <!-- поле переможців у вигляді поля вводу з тегами, як на дизайні -->
       <div class="winners-list">
-        <span v-if="winners.length === 0" class="winners-placeholder">Winners</span>
         <WinnerItem
           v-for="winner in winners"
           :key="winner.id"
           :winner="winner"
           @remove="emit('remove', $event)"
         />
+        <span class="winners-placeholder">Winners</span>
       </div>
       <BaseButton :disabled="!canPickWinner" @click="emit('pick')">New winner</BaseButton>
     </div>
@@ -32,25 +33,29 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
-.winners-card {
-  margin-bottom: 32px;
-}
-
 .winners-body {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 22px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .winners-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
   flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 4px 7px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 .winners-placeholder {
-  color: #adb5bd;
+  padding: 0 4px;
+  color: #999;
 }
 </style>

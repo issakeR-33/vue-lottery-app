@@ -1,4 +1,29 @@
 @import 'bootstrap/scss/functions';
+
+// Кольори й розміри з дизайну лабораторної
+$primary: #3bafda;
+$body-color: #333;
+$font-family-sans-serif:
+  'Open Sans',
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  Roboto,
+  sans-serif;
+$font-size-base: 0.9375rem;
+$border-color: #e5e5e5;
+$border-radius: 3px;
+$border-radius-sm: 2px;
+$border-radius-lg: 4px;
+$input-bg: #f9f9f9;
+$input-border-color: #ebebeb;
+$input-placeholder-color: #9a9a9a;
+$card-border-color: #e5e5e5;
+$card-spacer-y: 1.25rem;
+$card-spacer-x: 1.25rem;
+// білий текст на світло-синіх кнопках, як у дизайні
+$min-contrast-ratio: 2.3;
+
 @import 'bootstrap/scss/variables';
 @import 'bootstrap/scss/variables-dark';
 @import 'bootstrap/scss/maps';
@@ -19,16 +44,22 @@ body {
 }
 
 .app {
-  max-width: 1200px;
+  max-width: 832px;
   margin: 0 auto;
-  padding: 48px 24px;
+  padding: 140px 16px 64px;
 }
 
-.card-body {
-  padding: 32px;
+.card {
+  margin-bottom: 18px;
 }
 
 .btn {
-  padding: 10px 24px;
-  font-size: 1rem;
+  padding: 5px 20px;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .app {
+    padding-top: 32px;
+  }
 }

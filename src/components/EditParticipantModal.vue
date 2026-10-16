@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import type { Participant } from '../types/Participant'
 import {
   emptyFormErrors,
@@ -26,15 +26,34 @@ const open = defineModel<boolean>('open', { required: true })
 
 const form = reactive(emptyFormValues())
 const errors = reactive(emptyFormErrors())
+const validated = ref(false)
 
 // заповнюємо форму даними учасника щоразу, коли модалка відкривається
 watch(open, (isOpen) => {
   if (!isOpen || !props.participant) {
     return
   }
+  validated.value = false
   const { name, dob, email, phone } = props.participant
   Object.assign(form, { name, dob, email, phone })
   Object.assign(errors, emptyFormErrors())
+})
+
+function validate(): boolean {
+  // власний e-mail учасника дублікатом не вважається
+  const existingEmails = props.participants
+    .filter((p) => p.id !== props.participant?.id)
+    .map((p) => p.email.toLowerCase())
+
+  const validationErrors = validateParticipantForm(form, existingEmails)
+  Object.assign(errors, validationErrors)
+  return !hasErrors(validationErrors)
+}
+
+watch(form, () => {
+  if (validated.value) {
+    validate()
+  }
 })
 
 function submit(): void {
@@ -43,15 +62,8 @@ function submit(): void {
     return
   }
 
-  // власний e-mail учасника дублікатом не вважається
-  const existingEmails = props.participants
-    .filter((p) => p.id !== editing.id)
-    .map((p) => p.email.toLowerCase())
-
-  const validationErrors = validateParticipantForm(form, existingEmails)
-  Object.assign(errors, validationErrors)
-
-  if (hasErrors(validationErrors)) {
+  validated.value = true
+  if (!validate()) {
     return
   }
 
@@ -67,16 +79,34 @@ function submit(): void {
     </template>
 
     <div @keyup.enter="submit">
-      <BaseInput v-model="form.name" label="Name" :error="errors.name" />
+      <BaseInput
+        v-model="form.name"
+        label="Name"
+        :valid="validated && !errors.name"
+        :error="errors.name"
+      />
       <BaseInput
         v-model="form.dob"
         type="date"
         label="Date of Birth"
         :max="todayIsoDate()"
+        :valid="validated && !errors.dob"
         :error="errors.dob"
       />
-      <BaseInput v-model="form.email" type="email" label="Email" :error="errors.email" />
-      <BaseInput v-model="form.phone" type="tel" label="Phone number" :error="errors.phone" />
+      <BaseInput
+        v-model="form.email"
+        type="email"
+        label="Email"
+        :valid="validated && !errors.email"
+        :error="errors.email"
+      />
+      <BaseInput
+        v-model="form.phone"
+        type="tel"
+        label="Phone number"
+        :valid="validated && !errors.phone"
+        :error="errors.phone"
+      />
     </div>
 
     <template #footer>

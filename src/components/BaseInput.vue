@@ -7,6 +7,7 @@ defineProps<{
   placeholder?: string
   max?: string
   error?: string
+  valid?: boolean
 }>()
 
 const model = defineModel<string>({ required: true })
@@ -21,7 +22,7 @@ const inputId = useId()
       v-model="model"
       :type="type ?? 'text'"
       class="form-control"
-      :class="{ 'is-invalid': error }"
+      :class="{ 'is-invalid': error, 'is-valid': valid && !error }"
       :placeholder="placeholder"
       :max="max"
       :aria-invalid="Boolean(error)"
@@ -32,11 +33,15 @@ const inputId = useId()
 
 <style scoped>
 .field {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .field label {
-  font-weight: 500;
-  margin-bottom: 6px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.invalid-feedback {
+  font-size: 0.75rem;
 }
 </style>

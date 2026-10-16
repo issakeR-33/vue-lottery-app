@@ -187,27 +187,34 @@ function openDeleteModal(participant: Participant): void {
 }
 
 .text-cell {
-  max-width: 300px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .participants-table th {
-  font-weight: 600;
+  color: #555;
+  font-weight: 700;
+}
+
+.participants-table td {
+  color: #777;
 }
 
 .index-cell {
-  color: #6c757d;
+  color: #98a6ad;
 }
 
 .actions-cell {
   text-align: right;
 }
 
+/* у вузькому макеті з дизайну кнопки стоять одна під одною */
 .actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .table-btn {
@@ -240,19 +247,19 @@ function openDeleteModal(participant: Participant): void {
 }
 
 .table-btn--active {
-  border-color: #0d6efd;
-  background-color: #e7f1ff;
-  color: #0d6efd;
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary);
 }
 
 .table-btn--active:hover {
-  background-color: #d8e8ff;
+  background-color: var(--bs-primary-border-subtle);
 }
 
 .table-btn--edit:hover {
-  border-color: #0d6efd;
-  background-color: #e7f1ff;
-  color: #0d6efd;
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary);
 }
 
 .table-btn--delete {
