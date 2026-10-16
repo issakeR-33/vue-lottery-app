@@ -74,6 +74,11 @@ function updateParticipant(updated: Participant): void {
     participants.value[index] = updated
   }
 }
+
+function deleteParticipant(id: number): void {
+  participants.value = participants.value.filter((p) => p.id !== id)
+  removeWinner(id)
+}
 </script>
 
 <template>
@@ -87,6 +92,10 @@ function updateParticipant(updated: Participant): void {
 
     <RegistrationForm :participants="participants" @register="registerParticipant" />
 
-    <ParticipantsTable :participants="participants" @update="updateParticipant" />
+    <ParticipantsTable
+      :participants="participants"
+      @update="updateParticipant"
+      @delete="deleteParticipant"
+    />
   </main>
 </template>

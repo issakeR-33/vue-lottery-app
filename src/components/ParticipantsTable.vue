@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { Participant } from '../types/Participant'
 import EditParticipantModal from './EditParticipantModal.vue'
+import DeleteParticipantModal from './DeleteParticipantModal.vue'
 
 defineProps<{
   participants: Participant[]
@@ -9,6 +10,7 @@ defineProps<{
 
 const emit = defineEmits<{
   update: [participant: Participant]
+  delete: [id: number]
 }>()
 
 const isEditModalOpen = ref(false)
@@ -17,6 +19,14 @@ const editingParticipant = ref<Participant | null>(null)
 function openEditModal(participant: Participant): void {
   editingParticipant.value = participant
   isEditModalOpen.value = true
+}
+
+const isDeleteModalOpen = ref(false)
+const deletingParticipant = ref<Participant | null>(null)
+
+function openDeleteModal(participant: Participant): void {
+  deletingParticipant.value = participant
+  isDeleteModalOpen.value = true
 }
 </script>
 
@@ -52,6 +62,14 @@ function openEditModal(participant: Participant): void {
                     <i class="bi bi-pencil"></i>
                     Редагувати дані
                   </button>
+                  <button
+                    type="button"
+                    class="table-btn table-btn--delete"
+                    @click="openDeleteModal(participant)"
+                  >
+                    <i class="bi bi-trash"></i>
+                    Видалити учасника
+                  </button>
                 </div>
               </td>
             </tr>
@@ -68,6 +86,12 @@ function openEditModal(participant: Participant): void {
     :participant="editingParticipant"
     :participants="participants"
     @update="emit('update', $event)"
+  />
+
+  <DeleteParticipantModal
+    v-model:open="isDeleteModalOpen"
+    :participant="deletingParticipant"
+    @confirm="emit('delete', $event)"
   />
 </template>
 
@@ -139,6 +163,15 @@ function openEditModal(participant: Participant): void {
   border-color: #0d6efd;
   background-color: #e7f1ff;
   color: #0d6efd;
+}
+
+.table-btn--delete {
+  color: #dc3545;
+}
+
+.table-btn--delete:hover {
+  border-color: #dc3545;
+  background-color: #fdecee;
 }
 
 .empty-message {
