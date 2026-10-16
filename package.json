@@ -17,7 +17,8 @@
     "test:unit": "vitest",
     "lint:check": "oxlint . && eslint .",
     "format:check": "prettier --check --experimental-cli src/",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "deploy:routing": "npm run build && gh-pages -d dist -e routing -a -m \"Deploy feature/routing\""
   },
   "dependencies": {
     "@vee-validate/zod": "^4.15.1",
