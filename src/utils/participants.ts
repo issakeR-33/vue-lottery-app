@@ -3,6 +3,14 @@ import type { Participant } from '../types/Participant'
 export type SortKey = 'name' | 'dob'
 export type SortDirection = 'asc' | 'desc'
 
+export function filterByName(participants: readonly Participant[], query: string): Participant[] {
+  const normalized = query.trim().toLowerCase()
+  if (!normalized) {
+    return [...participants]
+  }
+  return participants.filter((p) => p.name.toLowerCase().includes(normalized))
+}
+
 // Повертає новий масив, вихідний список не змінюється.
 // Array.prototype.sort стабільний, тож рівні елементи зберігають порядок в обох напрямках.
 export function sortParticipants(

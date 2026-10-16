@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { Participant } from '../types/Participant'
-import { sortParticipants, type SortDirection, type SortKey } from '../utils/participants'
+import {
+  filterByName,
+  sortParticipants,
+  type SortDirection,
+  type SortKey,
+} from '../utils/participants'
+import SearchBar from './SearchBar.vue'
 import EditParticipantModal from './EditParticipantModal.vue'
 import DeleteParticipantModal from './DeleteParticipantModal.vue'
 
@@ -14,6 +20,7 @@ const emit = defineEmits<{
   delete: [id: number]
 }>()
 
+const searchQuery = ref('')
 const sortKey = ref<SortKey | null>(null)
 const sortDirection = ref<SortDirection>('asc')
 
@@ -31,9 +38,13 @@ function sortIcon(key: SortKey, base: string): string {
   return `bi ${base}${isDesc ? '-alt' : ''}`
 }
 
-// сортується копія, props.participants не змінюється
+// спочатку фільтрація, потім сортування; props.participants не змінюється
 const displayedParticipants = computed(() =>
-  sortParticipants(props.participants, sortKey.value, sortDirection.value),
+  sortParticipants(
+    filterByName(props.participants, searchQuery.value),
+    sortKey.value,
+    sortDirection.value,
+  ),
 )
 
 const isEditModalOpen = ref(false)
@@ -77,6 +88,7 @@ function openDeleteModal(participant: Participant): void {
             Дата народження
           </button>
         </div>
+        <SearchBar @filter-by-name="searchQuery = $event" />
       </div>
 
       <div class="table-wrapper">
@@ -123,7 +135,9 @@ function openDeleteModal(participant: Participant): void {
         </table>
       </div>
 
-      <p v-if="displayedParticipants.length === 0" class="empty-message">Список учасників пустий</p>
+      <p v-if="displayedParticipants.length === 0" class="empty-message">
+        {{ participants.length === 0 ? 'Список учасників пустий' : 'Нікого не знайдено' }}
+      </p>
     </div>
   </div>
 
