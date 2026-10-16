@@ -7,7 +7,8 @@ import type { useAuthStore } from '@/stores/auth'
 export function installAuthInterceptor(auth: ReturnType<typeof useAuthStore>, router: Router) {
   setAuthHooks({
     getAccessToken: () => auth.accessToken,
-    refreshAccessToken: async () => null,
+    // при 401 http-клієнт просить новий accessToken через POST /auth/refresh
+    refreshAccessToken: () => auth.refresh(),
     onSessionExpired: () => {
       auth.logout()
       const current = router.currentRoute.value
