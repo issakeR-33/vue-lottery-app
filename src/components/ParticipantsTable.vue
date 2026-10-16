@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Participant } from '../types/Participant'
+import { sortParticipants, type SortDirection, type SortKey } from '../utils/participants'
 import EditParticipantModal from './EditParticipantModal.vue'
 import DeleteParticipantModal from './DeleteParticipantModal.vue'
 
-defineProps<{
+const props = defineProps<{
   participants: Participant[]
 }>()
 
@@ -12,6 +13,28 @@ const emit = defineEmits<{
   update: [participant: Participant]
   delete: [id: number]
 }>()
+
+const sortKey = ref<SortKey | null>(null)
+const sortDirection = ref<SortDirection>('asc')
+
+function toggleSort(key: SortKey): void {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDirection.value = 'asc'
+  }
+}
+
+function sortIcon(key: SortKey, base: string): string {
+  const isDesc = sortKey.value === key && sortDirection.value === 'desc'
+  return `bi ${base}${isDesc ? '-alt' : ''}`
+}
+
+// сортується копія, props.participants не змінюється
+const displayedParticipants = computed(() =>
+  sortParticipants(props.participants, sortKey.value, sortDirection.value),
+)
 
 const isEditModalOpen = ref(false)
 const editingParticipant = ref<Participant | null>(null)
@@ -33,6 +56,29 @@ function openDeleteModal(participant: Participant): void {
 <template>
   <div class="card">
     <div class="card-body">
+      <div class="table-toolbar">
+        <div class="sort-controls">
+          <button
+            type="button"
+            class="table-btn"
+            :class="{ 'table-btn--active': sortKey === 'name' }"
+            @click="toggleSort('name')"
+          >
+            <i :class="sortIcon('name', 'bi-sort-alpha-down')"></i>
+            Ім'я
+          </button>
+          <button
+            type="button"
+            class="table-btn"
+            :class="{ 'table-btn--active': sortKey === 'dob' }"
+            @click="toggleSort('dob')"
+          >
+            <i :class="sortIcon('dob', 'bi-sort-down')"></i>
+            Дата народження
+          </button>
+        </div>
+      </div>
+
       <div class="table-wrapper">
         <table class="table participants-table">
           <thead>
@@ -46,7 +92,7 @@ function openDeleteModal(participant: Participant): void {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(participant, index) in participants" :key="participant.id">
+            <tr v-for="(participant, index) in displayedParticipants" :key="participant.id">
               <td class="index-cell">{{ index + 1 }}</td>
               <td class="text-cell" :title="participant.name">{{ participant.name }}</td>
               <td>{{ participant.dob }}</td>
@@ -77,7 +123,7 @@ function openDeleteModal(participant: Participant): void {
         </table>
       </div>
 
-      <p v-if="participants.length === 0" class="empty-message">Список учасників пустий</p>
+      <p v-if="displayedParticipants.length === 0" class="empty-message">Список учасників пустий</p>
     </div>
   </div>
 
@@ -96,6 +142,20 @@ function openDeleteModal(participant: Participant): void {
 </template>
 
 <style scoped>
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.sort-controls {
+  display: flex;
+  gap: 8px;
+}
+
 .table-wrapper {
   overflow-x: auto;
 }
@@ -157,6 +217,22 @@ function openDeleteModal(participant: Participant): void {
 
 .table-btn:hover {
   background-color: #f1f3f5;
+}
+
+.sort-controls .table-btn {
+  min-height: 38px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+}
+
+.table-btn--active {
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
+  color: #0d6efd;
+}
+
+.table-btn--active:hover {
+  background-color: #d8e8ff;
 }
 
 .table-btn--edit:hover {
