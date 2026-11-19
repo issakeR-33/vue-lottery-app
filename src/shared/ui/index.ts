@@ -1,0 +1,5 @@
+export { default as BaseButton } from './BaseButton/BaseButton.vue'
+export { default as BaseInput } from './BaseInput/BaseInput.vue'
+export { default as BaseModal } from './BaseModal/BaseModal.vue'
+export { default as BasePagination } from './BasePagination/BasePagination.vue'
+export { default as SearchBar } from './SearchBar/SearchBar.vue'
