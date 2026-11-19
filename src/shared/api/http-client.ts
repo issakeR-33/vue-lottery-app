@@ -1,4 +1,4 @@
-import { API_URL } from '@/config'
+import { API_URL } from '@/shared/config'
 
 // Єдине місце, де відомо про fetch, базову адресу, заголовки й обробку помилок.
 

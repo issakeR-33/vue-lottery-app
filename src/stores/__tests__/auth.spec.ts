@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useAuthStore } from '../auth'
-import { ServiceProvider } from '@/services/service-provider'
-import { FakeAuthService } from '@/services/__tests__/fake-auth.service'
+import { ServiceProvider } from '@/shared/api'
+import { AUTH_SERVICE } from '@/entities/session'
+import { FakeAuthService } from '@/entities/session/api/__tests__/fake-auth.service'
 
 const STORAGE_KEY = 'vue-lottery-auth'
 
@@ -14,7 +15,7 @@ describe('auth store', () => {
     localStorage.clear()
     setActivePinia(createPinia())
     service = new FakeAuthService()
-    ServiceProvider.override({ auth: service })
+    ServiceProvider.register(AUTH_SERVICE, () => service)
   })
 
   afterEach(() => {

@@ -1,6 +1,9 @@
-import { http } from '@/api/http-client'
-import { TOKEN_TTL_MINUTES } from '@/config'
-import type { AuthTokens, AuthUser, LoginCredentials, LoginResponse } from '@/types/auth'
+import { http } from '@/shared/api'
+import { TOKEN_TTL_MINUTES } from '@/shared/config'
+import type { AuthTokens, AuthUser, LoginCredentials, LoginResponse } from '@/entities/session'
+
+// ключ, під яким сервіс реєструється в ServiceProvider
+export const AUTH_SERVICE = 'auth'
 
 export interface AuthRepository {
   login(credentials: LoginCredentials): Promise<LoginResponse>

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { UserService } from '../user.service'
-import { HttpError } from '@/api/http-client'
+import { HttpError } from '@/shared/api'
 
 function mockFetch(body: unknown, status = 200) {
   const fetchMock = vi.fn(async () => new Response(JSON.stringify(body), { status }))

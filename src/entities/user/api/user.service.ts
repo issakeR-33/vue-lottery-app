@@ -1,5 +1,5 @@
-import { http, toQueryString } from '@/api/http-client'
-import type { CreateUserDto, UpdateUserDto, User } from '@/types/user'
+import { http, toQueryString } from '@/shared/api'
+import type { CreateUserDto, UpdateUserDto, User } from '@/entities/user'
 import type {
   Creatable,
   Deletable,
@@ -8,7 +8,7 @@ import type {
   PageParams,
   Readable,
   Searchable,
-} from './interfaces'
+} from '@/shared/api'
 
 interface UsersResponse {
   users: User[]
@@ -16,6 +16,9 @@ interface UsersResponse {
   skip: number
   limit: number
 }
+
+// ключ, під яким сервіс реєструється в ServiceProvider
+export const USER_SERVICE = 'users'
 
 export type UserRepository = Readable<User> &
   Searchable<User> &

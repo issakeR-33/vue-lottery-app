@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ServiceProvider } from '@/services/service-provider'
-import type { Page } from '@/services/interfaces'
-import { fullName, type User } from '@/types/user'
+import { ServiceProvider } from '@/shared/api'
+import { USER_SERVICE, type UserRepository } from '@/entities/user'
+import type { Page } from '@/shared/api'
+import { fullName, type User } from '@/entities/user'
 import type { UserFormValues } from '@/features/user-form/model/schemas'
 import { useUsersStore } from '@/stores/users'
 import { PAGE_SIZE, useUsersQuery } from '@/widgets/users-table/model/useUsersQuery'
@@ -29,8 +30,8 @@ async function loadUsers(): Promise<void> {
   error.value = null
   try {
     const data = search.value
-      ? await ServiceProvider.users.search(search.value, params.value)
-      : await ServiceProvider.users.getAll(params.value)
+      ? await ServiceProvider.get<UserRepository>(USER_SERVICE).search(search.value, params.value)
+      : await ServiceProvider.get<UserRepository>(USER_SERVICE).getAll(params.value)
     if (request === lastRequest) result.value = data
   } catch (e) {
     if (request === lastRequest) error.value = (e as Error).message

@@ -1,7 +1,7 @@
-import { HttpError } from '@/api/http-client'
-import type { Page, PageParams } from '../interfaces'
+import { HttpError } from '@/shared/api'
+import type { Page, PageParams } from '@/shared/api'
 import type { UserRepository } from '../user.service'
-import type { CreateUserDto, UpdateUserDto, User } from '@/types/user'
+import type { CreateUserDto, UpdateUserDto, User } from '@/entities/user'
 
 export function makeUser(id: number, overrides: Partial<User> = {}): User {
   return {

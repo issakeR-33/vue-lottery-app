@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SortField, SortOrder } from '@/widgets/users-table/model/useUsersQuery'
-import { fullName, type User } from '@/types/user'
+import { fullName, type User } from '@/entities/user'
 import SearchBar from '@/shared/ui/SearchBar/SearchBar.vue'
 
 defineProps<{

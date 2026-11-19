@@ -1,5 +1,5 @@
 import type { Router } from 'vue-router'
-import { setAuthHooks } from '@/api/http-client'
+import { setAuthHooks } from '@/shared/api'
 import type { useAuthStore } from '@/stores/auth'
 
 // Зв'язує http-клієнт зі стором авторизації: клієнт бере звідти токен

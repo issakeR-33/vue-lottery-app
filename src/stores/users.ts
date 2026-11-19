@@ -1,13 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import type { LocationQuery } from 'vue-router'
-import { HttpError } from '@/api/http-client'
-import { ServiceProvider } from '@/services/service-provider'
-import type { Page } from '@/services/interfaces'
-import { fullName, type CreateUserDto, type UpdateUserDto, type User } from '@/types/user'
+import { HttpError } from '@/shared/api'
+import { ServiceProvider } from '@/shared/api'
+import { USER_SERVICE, type UserRepository } from '@/entities/user'
+import type { Page } from '@/shared/api'
+import { fullName, type CreateUserDto, type UpdateUserDto, type User } from '@/entities/user'
 
 export const MAX_WINNERS = 3
 const STORAGE_KEY = 'vue-lottery-local-changes'
+
+const users = () => ServiceProvider.get<UserRepository>(USER_SERVICE)
 
 interface LocalChanges {
   created: User[]
@@ -94,11 +97,11 @@ export const useUsersStore = defineStore('users', () => {
     if (deletedIds.value.includes(id)) {
       throw new HttpError(404, `Користувача з id ${id} видалено`)
     }
-    return updated.value[id] ?? ServiceProvider.users.getById(id)
+    return updated.value[id] ?? users().getById(id)
   }
 
   async function createUser(data: CreateUserDto): Promise<User> {
-    const response = await ServiceProvider.users.create(data)
+    const response = await users().create(data)
     // сервер щоразу повертає той самий id (total + 1), тож робимо його унікальним локально
     const id = Math.max(response.id, ...created.value.map((u) => u.id + 1))
     const user: User = { ...response, ...data, id }
@@ -114,7 +117,7 @@ export const useUsersStore = defineStore('users', () => {
       user = { ...local, ...data }
       created.value = created.value.map((u) => (u.id === id ? user : u))
     } else {
-      const response = await ServiceProvider.users.update(id, data)
+      const response = await users().update(id, data)
       user = { ...response, ...data, id }
       updated.value = { ...updated.value, [id]: user }
     }
@@ -126,7 +129,7 @@ export const useUsersStore = defineStore('users', () => {
     if (findCreated(id)) {
       created.value = created.value.filter((u) => u.id !== id)
     } else {
-      await ServiceProvider.users.delete(id)
+      await users().delete(id)
       deletedIds.value.push(id)
     }
     removeWinner(id)

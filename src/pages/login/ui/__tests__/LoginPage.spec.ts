@@ -3,8 +3,9 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import LoginView from '../LoginPage.vue'
-import { ServiceProvider } from '@/services/service-provider'
-import { FakeAuthService } from '@/services/__tests__/fake-auth.service'
+import { ServiceProvider } from '@/shared/api'
+import { AUTH_SERVICE } from '@/entities/session'
+import { FakeAuthService } from '@/entities/session/api/__tests__/fake-auth.service'
 import { useAuthStore } from '@/stores/auth'
 
 let router: Router
@@ -40,7 +41,7 @@ describe('LoginView', () => {
   beforeEach(() => {
     localStorage.clear()
     setActivePinia(createPinia())
-    ServiceProvider.override({ auth: new FakeAuthService() })
+    ServiceProvider.register(AUTH_SERVICE, () => new FakeAuthService())
   })
 
   afterEach(() => {

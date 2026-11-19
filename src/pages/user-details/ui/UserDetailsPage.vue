@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUsersStore } from '@/stores/users'
-import { fullName, type User } from '@/types/user'
+import { fullName, type User } from '@/entities/user'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 import ConfirmDeleteModal from '@/widgets/users-table/ui/ConfirmDeleteModal.vue'
 

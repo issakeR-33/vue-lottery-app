@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { User } from '@/types/user'
+import type { User } from '@/entities/user'
 import WinnerItem from './WinnerItem.vue'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 

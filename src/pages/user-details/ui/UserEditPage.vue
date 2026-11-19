@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useUsersStore } from '@/stores/users'
-import type { UpdateUserDto, User } from '@/types/user'
+import type { UpdateUserDto, User } from '@/entities/user'
 import type { UserFormValues } from '@/features/user-form/model/schemas'
 import UserForm from '@/features/user-form/ui/UserForm.vue'
 

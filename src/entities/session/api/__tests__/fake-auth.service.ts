@@ -1,6 +1,6 @@
-import { HttpError } from '@/api/http-client'
+import { HttpError } from '@/shared/api'
 import type { AuthRepository } from '../auth.service'
-import type { AuthTokens, AuthUser, LoginCredentials, LoginResponse } from '@/types/auth'
+import type { AuthTokens, AuthUser, LoginCredentials, LoginResponse } from '@/entities/session'
 
 export const testUser: AuthUser = {
   id: 1,

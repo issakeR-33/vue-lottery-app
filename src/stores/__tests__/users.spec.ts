@@ -2,10 +2,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useUsersStore } from '../users'
-import { ServiceProvider } from '@/services/service-provider'
-import { FakeUserService, makeUser } from '@/services/__tests__/fake-user.service'
-import type { Page } from '@/services/interfaces'
-import type { CreateUserDto, User } from '@/types/user'
+import { ServiceProvider } from '@/shared/api'
+import { USER_SERVICE } from '@/entities/user'
+import { FakeUserService, makeUser } from '@/entities/user/api/__tests__/fake-user.service'
+import type { Page } from '@/shared/api'
+import type { CreateUserDto, User } from '@/entities/user'
 
 const newUser: CreateUserDto = {
   firstName: 'Ann',
@@ -29,7 +30,7 @@ describe('users store', () => {
     localStorage.clear()
     setActivePinia(createPinia())
     service = new FakeUserService()
-    ServiceProvider.override({ users: service })
+    ServiceProvider.register(USER_SERVICE, () => service)
   })
 
   afterEach(() => {

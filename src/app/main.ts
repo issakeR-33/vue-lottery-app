@@ -6,6 +6,10 @@ import App from './App.vue'
 import { router } from './providers/router'
 import { useAuthStore } from '@/stores/auth'
 import { installAuthInterceptor } from './providers/auth-interceptor'
+import { registerServices } from './providers/services'
+
+// сервіси реєструються до першого звернення сторів до ServiceProvider
+registerServices()
 
 const app = createApp(App)
 const pinia = createPinia()

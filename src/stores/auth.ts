@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { ServiceProvider } from '@/services/service-provider'
-import type { AuthUser, LoginCredentials } from '@/types/auth'
+import { ServiceProvider } from '@/shared/api'
+import { AUTH_SERVICE, type AuthRepository } from '@/entities/session'
+import type { AuthUser, LoginCredentials } from '@/entities/session'
 
 const STORAGE_KEY = 'vue-lottery-auth'
+
+const auth = () => ServiceProvider.get<AuthRepository>(AUTH_SERVICE)
 
 interface Session {
   user: AuthUser
@@ -47,14 +50,14 @@ export const useAuthStore = defineStore('auth', () => {
   )
 
   async function login(credentials: LoginCredentials): Promise<void> {
-    const { accessToken, refreshToken, ...profile } = await ServiceProvider.auth.login(credentials)
+    const { accessToken, refreshToken, ...profile } = await auth().login(credentials)
     session.value = { user: toAuthUser(profile), accessToken, refreshToken }
   }
 
   // GET /auth/me з заголовком Authorization: Bearer перевіряє, що збережений токен ще дійсний
   async function fetchMe(): Promise<void> {
     if (!session.value) return
-    const me = await ServiceProvider.auth.me()
+    const me = await auth().me()
     if (session.value) {
       session.value.user = toAuthUser(me)
     }
@@ -65,7 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
     const refreshToken = session.value?.refreshToken
     if (!refreshToken) return null
     try {
-      const tokens = await ServiceProvider.auth.refresh(refreshToken)
+      const tokens = await auth().refresh(refreshToken)
       if (!session.value) return null
       session.value.accessToken = tokens.accessToken
       session.value.refreshToken = tokens.refreshToken

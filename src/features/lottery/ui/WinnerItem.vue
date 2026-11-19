@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { fullName, type User } from '@/types/user'
+import { fullName, type User } from '@/entities/user'
 
 defineProps<{
   winner: User

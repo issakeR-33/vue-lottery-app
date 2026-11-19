@@ -3,8 +3,9 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
 import UsersView from '../UsersPage.vue'
-import { ServiceProvider } from '@/services/service-provider'
-import { FakeUserService, makeUser } from '@/services/__tests__/fake-user.service'
+import { ServiceProvider } from '@/shared/api'
+import { USER_SERVICE } from '@/entities/user'
+import { FakeUserService, makeUser } from '@/entities/user/api/__tests__/fake-user.service'
 
 let service: FakeUserService
 let router: Router
@@ -37,7 +38,7 @@ describe('UsersView', () => {
     localStorage.clear()
     setActivePinia(createPinia())
     service = new FakeUserService(Array.from({ length: 25 }, (_, i) => makeUser(i + 1)))
-    ServiceProvider.override({ users: service })
+    ServiceProvider.register(USER_SERVICE, () => service)
   })
 
   afterEach(() => {

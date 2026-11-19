@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router'
-import type { PageParams } from '@/services/interfaces'
+import type { PageParams } from '@/shared/api'
 
 export const PAGE_SIZE = 10
 
