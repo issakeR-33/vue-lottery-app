@@ -6,6 +6,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import { router } from './providers/router'
 import { useSessionStore } from '@/entities/session'
+import { useSettingsStore } from '@/features/theme-toggle'
 import { installAuthInterceptor } from './providers/auth-interceptor'
 import { registerServices } from './providers/services'
 import { installUi } from './providers/ui'
@@ -18,6 +19,9 @@ const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 installUi(app)
+
+// збережена тема застосовується ще до першого рендеру
+useSettingsStore(pinia)
 
 const session = useSessionStore(pinia)
 installAuthInterceptor(session, router)

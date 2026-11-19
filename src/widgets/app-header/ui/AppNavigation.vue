@@ -4,6 +4,7 @@ import { useRoute, type RouteLocationRaw } from 'vue-router'
 import { AppButton } from '@/shared/ui'
 import { useSessionStore } from '@/entities/session'
 import { LogoutButton } from '@/features/auth'
+import { ThemeToggle } from '@/features/theme-toggle'
 
 interface NavItem {
   label: string
@@ -46,6 +47,7 @@ function inSection(item: NavItem): boolean {
       </a>
     </RouterLink>
     <div class="navigation__auth">
+      <ThemeToggle />
       <template v-if="isAuthenticated">
         <span class="navigation__user" :title="user?.email">
           <i class="bi bi-person-circle"></i> {{ user?.firstName }}

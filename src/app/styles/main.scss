@@ -53,6 +53,11 @@ a {
   color: var(--p-primary-color);
 }
 
+// AppButton з to/href рендериться як <a>, тому прибираємо підкреслення посилань
+a.p-button {
+  text-decoration: none;
+}
+
 code {
   font-size: 0.875em;
   color: var(--p-primary-700);
