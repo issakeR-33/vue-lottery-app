@@ -4,13 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { HttpError } from '@/shared/api'
-import { useAuthStore } from '@/stores/auth'
+import { useSessionStore } from '@/entities/session'
 import { safeRedirect } from '@/app/providers/router/guards'
 import { loginSchema, type LoginFormValues } from '@/features/user-form/model/schemas'
 import BaseInput from '@/shared/ui/BaseInput/BaseInput.vue'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 
-const auth = useAuthStore()
+const session = useSessionStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -35,7 +35,7 @@ const onSubmit = handleSubmit(async (values: LoginFormValues) => {
   isSubmitting.value = true
   authError.value = null
   try {
-    await auth.login(values)
+    await session.login(values)
     // після входу повертаємося на сторінку, з якої guard перенаправив на логін
     await router.replace(safeRedirect(route.query.redirect) ?? { name: 'users' })
   } catch (error) {

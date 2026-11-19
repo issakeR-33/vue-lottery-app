@@ -6,7 +6,8 @@ import { USER_SERVICE, type UserRepository } from '@/entities/user'
 import type { Page } from '@/shared/api'
 import { fullName, type User } from '@/entities/user'
 import type { UserFormValues } from '@/features/user-form/model/schemas'
-import { useUsersStore } from '@/stores/users'
+import { useUsersStore } from '@/entities/user'
+import { useWinnersStore } from '@/features/lottery'
 import { PAGE_SIZE, useUsersQuery } from '@/widgets/users-table/model/useUsersQuery'
 import WinnersList from '@/features/lottery/ui/WinnersList.vue'
 import UsersTable from '@/widgets/users-table/ui/UsersTable.vue'
@@ -15,6 +16,7 @@ import UserForm from '@/features/user-form/ui/UserForm.vue'
 import ConfirmDeleteModal from '@/widgets/users-table/ui/ConfirmDeleteModal.vue'
 
 const store = useUsersStore()
+const winners = useWinnersStore()
 const { page, search, sort, order, params, setPage, setSearch, toggleSort } = useUsersQuery()
 
 const result = ref<Page<User> | null>(null)
@@ -88,7 +90,8 @@ function askDelete(user: User): void {
 async function deleteUser(user: User): Promise<void> {
   isDeleting.value = true
   try {
-    await store.deleteUser(user.id)
+    await store.removeUser(user.id)
+    winners.remove(user.id)
     store.notify(`Учасника ${fullName(user)} видалено`)
   } catch (e) {
     error.value = (e as Error).message
@@ -102,10 +105,10 @@ async function deleteUser(user: User): Promise<void> {
 <template>
   <div class="users-page">
     <WinnersList
-      :winners="store.winners"
-      :can-pick-winner="store.canPickWinner(users)"
-      @pick="store.pickWinner(users)"
-      @remove="store.removeWinner"
+      :winners="winners.winners"
+      :can-pick-winner="winners.canPick(users)"
+      @pick="winners.pick(users)"
+      @remove="winners.remove"
     />
 
     <div class="card">

@@ -4,7 +4,7 @@ import {
   type RouteRecordRaw,
   type RouterHistory,
 } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useSessionStore } from '@/entities/session'
 import { checkAccess } from './guards'
 
 declare module 'vue-router' {
@@ -94,7 +94,7 @@ export function pageTitle(title?: string): string {
 export const router = createAppRouter()
 
 // navigation guard: /users і вкладені сторінки лише після входу, /login лише для гостей
-router.beforeEach((to) => checkAccess(to, useAuthStore().isAuthenticated))
+router.beforeEach((to) => checkAccess(to, useSessionStore().isAuthenticated))
 
 // заголовок вкладки береться з meta.title сторінки
 router.afterEach((to) => {

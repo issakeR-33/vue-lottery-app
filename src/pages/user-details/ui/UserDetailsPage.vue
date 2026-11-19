@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUsersStore } from '@/stores/users'
+import { useUsersStore } from '@/entities/user'
+import { useWinnersStore } from '@/features/lottery'
 import { fullName, type User } from '@/entities/user'
 import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 import ConfirmDeleteModal from '@/widgets/users-table/ui/ConfirmDeleteModal.vue'
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const store = useUsersStore()
+const winners = useWinnersStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -59,6 +61,7 @@ const details = computed(() => {
 
 function onSaved(updated: User): void {
   user.value = updated
+  winners.sync(updated)
   store.notify('Дані учасника оновлено')
   router.push({ name: 'user', params: { id: updated.id } })
 }
@@ -71,7 +74,8 @@ async function deleteUser(target: User): Promise<void> {
   isDeleting.value = true
   deleteError.value = null
   try {
-    await store.deleteUser(target.id)
+    await store.removeUser(target.id)
+    winners.remove(target.id)
     store.notify(`Учасника ${fullName(target)} видалено`)
     await router.push(backToList.value)
   } catch (e) {

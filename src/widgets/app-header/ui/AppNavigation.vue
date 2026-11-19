@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useSessionStore } from '@/entities/session'
 
 interface NavItem {
   label: string
@@ -17,14 +17,14 @@ const items: NavItem[] = [
 
 const route = useRoute()
 const router = useRouter()
-const auth = useAuthStore()
+const session = useSessionStore()
 
 function inSection(item: NavItem): boolean {
   return Boolean(item.section && route.path.startsWith(item.section))
 }
 
 function logout(): void {
-  auth.logout()
+  session.clearSession()
   router.push({ name: 'login' })
 }
 </script>
@@ -50,9 +50,9 @@ function logout(): void {
     </RouterLink>
 
     <div class="navigation__auth">
-      <template v-if="auth.isAuthenticated">
-        <span class="navigation__user" :title="auth.user?.email">
-          <i class="bi bi-person-circle"></i> {{ auth.user?.firstName }}
+      <template v-if="session.isAuthenticated">
+        <span class="navigation__user" :title="session.user?.email">
+          <i class="bi bi-person-circle"></i> {{ session.user?.firstName }}
         </span>
         <button type="button" class="btn btn-outline-primary btn-sm" @click="logout">Logout</button>
       </template>

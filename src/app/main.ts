@@ -2,9 +2,10 @@ import './styles/main.scss'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import { router } from './providers/router'
-import { useAuthStore } from '@/stores/auth'
+import { useSessionStore } from '@/entities/session'
 import { installAuthInterceptor } from './providers/auth-interceptor'
 import { registerServices } from './providers/services'
 
@@ -13,17 +14,18 @@ registerServices()
 
 const app = createApp(App)
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 
-const auth = useAuthStore(pinia)
-installAuthInterceptor(auth, router)
+const session = useSessionStore(pinia)
+installAuthInterceptor(session, router)
 
 app.use(router)
 app.mount('#app')
 
 // збережену сесію перевіряємо запитом до захищеного /auth/me
-if (auth.isAuthenticated) {
-  auth.fetchMe().catch(() => {
+if (session.isAuthenticated) {
+  session.fetchMe().catch(() => {
     // протермінований токен обробляє interceptor, решта помилок не критична
   })
 }

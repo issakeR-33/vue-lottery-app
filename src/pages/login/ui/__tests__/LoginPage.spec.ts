@@ -6,7 +6,7 @@ import LoginView from '../LoginPage.vue'
 import { ServiceProvider } from '@/shared/api'
 import { AUTH_SERVICE } from '@/entities/session'
 import { FakeAuthService } from '@/entities/session/api/__tests__/fake-auth.service'
-import { useAuthStore } from '@/stores/auth'
+import { useSessionStore } from '@/entities/session'
 
 let router: Router
 
@@ -55,7 +55,7 @@ describe('LoginView', () => {
 
     expect(wrapper.text()).toContain("Обов'язкове поле")
     expect(wrapper.text()).toContain('Щонайменше 6 символів')
-    expect(useAuthStore().isAuthenticated).toBe(false)
+    expect(useSessionStore().isAuthenticated).toBe(false)
   })
 
   it('shows the authorization error inside the form', async () => {
@@ -71,7 +71,7 @@ describe('LoginView', () => {
 
     await submit(wrapper, 'emilys', 'emilyspass')
 
-    expect(useAuthStore().isAuthenticated).toBe(true)
+    expect(useSessionStore().isAuthenticated).toBe(true)
     expect(router.currentRoute.value.fullPath).toBe('/users/5')
   })
 
