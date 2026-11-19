@@ -14,7 +14,7 @@ import AppLogo from '@/widgets/app-header/ui/AppLogo.vue'
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .auth-layout {
   display: flex;
   flex-direction: column;
@@ -22,20 +22,20 @@ import AppLogo from '@/widgets/app-header/ui/AppLogo.vue'
   max-width: 400px;
   margin: 0 auto;
   padding: 80px 16px 48px;
-}
 
-.auth-layout__logo {
-  margin-bottom: 20px;
-  text-align: center;
-}
+  &__logo {
+    margin-bottom: 20px;
+    text-align: center;
+  }
 
-.auth-layout__back {
-  align-self: center;
-  color: #98a6ad;
-  text-decoration: none;
-}
+  &__back {
+    align-self: center;
+    color: var(--p-text-muted-color);
+    text-decoration: none;
 
-.auth-layout__back:hover {
-  color: var(--bs-primary);
+    &:hover {
+      color: var(--p-primary-color);
+    }
+  }
 }
 </style>

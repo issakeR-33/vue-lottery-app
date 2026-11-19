@@ -15,6 +15,8 @@ withDefaults(
     disabled?: boolean
     /** Якщо задано, кнопка стає посиланням RouterLink. */
     to?: RouteLocationRaw
+    /** Зовнішнє посилання, відкривається в новій вкладці. */
+    href?: string
   }>(),
   {
     type: 'button',
@@ -44,6 +46,18 @@ defineEmits<{
       <slot />
     </template>
   </Button>
+  <Button
+    v-else-if="href"
+    as="a"
+    :href="href"
+    target="_blank"
+    rel="noopener"
+    :label="label"
+    :icon="icon"
+    :severity="severity === 'primary' ? undefined : severity"
+    :variant="variant"
+    :size="size"
+  />
   <Button
     v-else
     :type="type"

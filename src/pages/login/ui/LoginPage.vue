@@ -1,98 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useForm } from 'vee-validate'
-import { toTypedSchema } from '@vee-validate/zod'
-import { HttpError } from '@/shared/api'
-import { useSessionStore } from '@/entities/session'
+import { AppCard } from '@/shared/ui'
+import { LoginForm } from '@/features/auth'
 import { safeRedirect } from '@/app/providers/router/guards'
-import { loginSchema, type LoginFormValues } from '@/features/user-form/model/schemas'
-import BaseInput from '@/shared/ui/BaseInput/BaseInput.vue'
-import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
 
-const session = useSessionStore()
 const route = useRoute()
 const router = useRouter()
 
-const { defineField, handleSubmit, errors, submitCount } = useForm({
-  validationSchema: toTypedSchema(loginSchema),
-})
-
-const [username, usernameAttrs] = defineField('username')
-const [password, passwordAttrs] = defineField('password')
-
-const isSubmitting = ref(false)
-const authError = ref<string | null>(null)
-
-function describeError(error: unknown): string {
-  if (error instanceof HttpError && (error.status === 400 || error.status === 401)) {
-    return 'Невірний логін або пароль'
-  }
-  return `Не вдалося увійти: ${(error as Error).message}`
+// після входу повертаємося на сторінку, з якої guard перенаправив на логін
+function onLoggedIn(): Promise<unknown> {
+  return router.replace(safeRedirect(route.query.redirect) ?? { name: 'users' })
 }
-
-const onSubmit = handleSubmit(async (values: LoginFormValues) => {
-  isSubmitting.value = true
-  authError.value = null
-  try {
-    await session.login(values)
-    // після входу повертаємося на сторінку, з якої guard перенаправив на логін
-    await router.replace(safeRedirect(route.query.redirect) ?? { name: 'users' })
-  } catch (error) {
-    authError.value = describeError(error)
-  } finally {
-    isSubmitting.value = false
-  }
-})
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-body">
-      <h1 class="login-title">LOGIN</h1>
-      <p class="hint">Увійдіть, щоб побачити список учасників.</p>
-
-      <form novalidate @submit="onSubmit">
-        <div v-if="authError" class="alert alert-danger" role="alert">{{ authError }}</div>
-
-        <BaseInput
-          v-model="username"
-          v-bind="usernameAttrs"
-          label="Username"
-          placeholder="Enter username"
-          autocomplete="username"
-          :error="errors.username"
-          :valid="submitCount > 0"
-        />
-        <BaseInput
-          v-model="password"
-          v-bind="passwordAttrs"
-          type="password"
-          label="Password"
-          placeholder="Enter password"
-          autocomplete="current-password"
-          :error="errors.password"
-          :valid="submitCount > 0"
-        />
-
-        <BaseButton type="submit" class="login-submit" :disabled="isSubmitting">
-          <span
-            v-if="isSubmitting"
-            class="spinner-border spinner-border-sm"
-            aria-hidden="true"
-          ></span>
-          Login
-        </BaseButton>
-      </form>
-
-      <p class="demo-account">
-        Тестовий акаунт DummyJSON: <code>emilys</code> / <code>emilyspass</code>
-      </p>
-    </div>
-  </div>
+  <AppCard>
+    <h1 class="login-title">LOGIN</h1>
+    <p class="hint">Увійдіть, щоб побачити список учасників.</p>
+    <LoginForm @success="onLoggedIn" />
+    <p class="demo-account">
+      Тестовий акаунт DummyJSON: <code>emilys</code> / <code>emilyspass</code>
+    </p>
+  </AppCard>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .login-title {
   margin-bottom: 2px;
   font-size: 1rem;
@@ -101,17 +33,12 @@ const onSubmit = handleSubmit(async (values: LoginFormValues) => {
 
 .hint {
   margin-bottom: 18px;
-  color: #98a6ad;
-}
-
-.login-submit {
-  width: 100%;
-  margin-top: 8px;
+  color: var(--p-text-muted-color);
 }
 
 .demo-account {
   margin: 16px 0 0;
-  color: #98a6ad;
+  color: var(--p-text-muted-color);
   font-size: 0.85rem;
   text-align: center;
 }

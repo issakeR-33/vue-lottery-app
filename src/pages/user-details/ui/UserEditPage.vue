@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useUsersStore } from '@/entities/user'
-import type { UpdateUserDto, User } from '@/entities/user'
-import type { UserFormValues } from '@/features/user-form/model/schemas'
-import UserForm from '@/features/user-form/ui/UserForm.vue'
+import { AppButton } from '@/shared/ui'
+import { useUsersStore, type UpdateUserDto, type User } from '@/entities/user'
+import { UserForm, type UserFormValues } from '@/features/user-form'
 
 // користувача передає батьківська сторінка /users/:id через <RouterView :user="user">
 const props = defineProps<{
@@ -50,24 +49,27 @@ async function save({ password, ...values }: UserFormValues): Promise<void> {
       @submit="save"
     >
       <template #actions>
-        <RouterLink :to="{ name: 'user', params: { id: user.id } }" class="btn btn-secondary">
-          Скасувати
-        </RouterLink>
+        <AppButton
+          label="Скасувати"
+          severity="secondary"
+          variant="outlined"
+          :to="{ name: 'user', params: { id: user.id } }"
+        />
       </template>
     </UserForm>
   </section>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .edit-section {
   padding-top: 16px;
-  border-top: 1px solid #e5e5e5;
-}
+  border-top: 1px solid var(--p-content-border-color);
 
-.edit-section__title {
-  margin-bottom: 16px;
-  font-size: 1rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  &__title {
+    margin-bottom: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
 }
 </style>

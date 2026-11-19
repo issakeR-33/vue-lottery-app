@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
-import LoginView from '../LoginPage.vue'
+import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
+import LoginPage from '../LoginPage.vue'
 import { ServiceProvider } from '@/shared/api'
 import { AUTH_SERVICE } from '@/entities/session'
 import { FakeAuthService } from '@/entities/session/api/__tests__/fake-auth.service'
@@ -14,13 +16,13 @@ async function mountLogin(url = '/login') {
   router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/login', name: 'login', component: LoginView },
+      { path: '/login', name: 'login', component: LoginPage },
       { path: '/users', name: 'users', component: { template: '<div />' } },
       { path: '/users/:id', name: 'user', component: { template: '<div />' } },
     ],
   })
   await router.push(url)
-  return mount(LoginView, { global: { plugins: [router] } })
+  return mount(LoginPage, { global: { plugins: [router, PrimeVue, ToastService] } })
 }
 
 async function submit(
@@ -37,7 +39,7 @@ async function submit(
   await flushPromises()
 }
 
-describe('LoginView', () => {
+describe('LoginPage', () => {
   beforeEach(() => {
     localStorage.clear()
     setActivePinia(createPinia())
@@ -63,7 +65,7 @@ describe('LoginView', () => {
 
     await submit(wrapper, 'emilys', 'wrongpass')
 
-    expect(wrapper.find('.alert-danger').text()).toBe('Невірний логін або пароль')
+    expect(wrapper.find('[role="alert"]').text()).toBe('Невірний логін або пароль')
   })
 
   it('returns to the requested page after a successful login', async () => {

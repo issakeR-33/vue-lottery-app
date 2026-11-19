@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import {
-  createUserSchema,
-  editUserSchema,
-  type UserFormValues,
-} from '@/features/user-form/model/schemas'
-import BaseInput from '@/shared/ui/BaseInput/BaseInput.vue'
-import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
+import type { Gender } from '@/entities/user'
+import { AppButton, AppInput, AppMessage, AppSelect } from '@/shared/ui'
+import { createUserSchema, editUserSchema, type UserFormValues } from '../model/schemas'
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -43,9 +39,13 @@ const age = computed({
 const [gender, genderAttrs] = defineField('gender')
 const [phone, phoneAttrs] = defineField('phone')
 
+const genderOptions: { label: string; value: Gender }[] = [
+  { label: 'Female', value: 'female' },
+  { label: 'Male', value: 'male' },
+]
+
 // як у лабораторній 4: після першої спроби збереження поля підсвічуються зеленим або червоним
 const validated = computed(() => submitCount.value > 0)
-const genderId = useId()
 
 const onSubmit = handleSubmit((values) => emit('submit', values))
 
@@ -55,10 +55,9 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
 
 <template>
   <form class="user-form" novalidate @submit="onSubmit">
-    <div v-if="serverError" class="alert alert-danger" role="alert">{{ serverError }}</div>
-
+    <AppMessage v-if="serverError">{{ serverError }}</AppMessage>
     <div class="user-form__grid">
-      <BaseInput
+      <AppInput
         v-model="firstName"
         v-bind="firstNameAttrs"
         label="First name"
@@ -67,7 +66,7 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.firstName"
         :valid="validated"
       />
-      <BaseInput
+      <AppInput
         v-model="lastName"
         v-bind="lastNameAttrs"
         label="Last name"
@@ -76,7 +75,7 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.lastName"
         :valid="validated"
       />
-      <BaseInput
+      <AppInput
         v-model="email"
         v-bind="emailAttrs"
         type="email"
@@ -86,7 +85,7 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.email"
         :valid="validated"
       />
-      <BaseInput
+      <AppInput
         v-model="username"
         v-bind="usernameAttrs"
         label="Username"
@@ -95,7 +94,7 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.username"
         :valid="validated"
       />
-      <BaseInput
+      <AppInput
         v-model="password"
         v-bind="passwordAttrs"
         type="password"
@@ -105,7 +104,7 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.password"
         :valid="validated && Boolean(password)"
       />
-      <BaseInput
+      <AppInput
         v-model="phone"
         v-bind="phoneAttrs"
         type="tel"
@@ -115,7 +114,7 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.phone"
         :valid="validated"
       />
-      <BaseInput
+      <AppInput
         v-model="age"
         v-bind="ageAttrs"
         type="number"
@@ -126,57 +125,36 @@ defineExpose({ reset: () => resetForm({ values: { password: '' } }) })
         :error="errors.age"
         :valid="validated"
       />
-      <div class="field">
-        <label class="form-label" :for="genderId">Gender</label>
-        <select
-          :id="genderId"
-          v-model="gender"
-          v-bind="genderAttrs"
-          class="form-select"
-          :class="{ 'is-invalid': errors.gender, 'is-valid': validated && !errors.gender }"
-        >
-          <option :value="undefined" disabled>Оберіть стать</option>
-          <option value="female">Female</option>
-          <option value="male">Male</option>
-        </select>
-        <div v-if="errors.gender" class="invalid-feedback">{{ errors.gender }}</div>
-      </div>
+      <AppSelect
+        v-model="gender"
+        v-bind="genderAttrs"
+        label="Gender"
+        placeholder="Оберіть стать"
+        :options="genderOptions"
+        :error="errors.gender"
+        :valid="validated"
+      />
     </div>
-
     <div class="user-form__actions">
       <slot name="actions" />
-      <BaseButton type="submit" :disabled="submitting">
-        <span v-if="submitting" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        {{ submitLabel }}
-      </BaseButton>
+      <AppButton type="submit" :label="submitLabel" :loading="submitting" />
     </div>
   </form>
 </template>
 
-<style scoped>
-.user-form__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  column-gap: 20px;
-}
+<style scoped lang="scss">
+.user-form {
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    column-gap: 20px;
+  }
 
-.field {
-  margin-bottom: 14px;
-}
-
-.field label {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.invalid-feedback {
-  font-size: 0.75rem;
-}
-
-.user-form__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+  }
 }
 </style>

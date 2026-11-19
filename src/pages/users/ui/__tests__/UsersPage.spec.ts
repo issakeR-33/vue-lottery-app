@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter, type Router } from 'vue-router'
-import UsersView from '../UsersPage.vue'
+import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
+import UsersPage from '../UsersPage.vue'
 import { ServiceProvider } from '@/shared/api'
 import { USER_SERVICE } from '@/entities/user'
 import { FakeUserService, makeUser } from '@/entities/user/api/__tests__/fake-user.service'
@@ -14,7 +16,7 @@ async function mountAt(url: string) {
   router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/users', name: 'users', component: UsersView },
+      { path: '/users', name: 'users', component: UsersPage },
       {
         path: '/users/:id',
         name: 'user',
@@ -24,7 +26,7 @@ async function mountAt(url: string) {
     ],
   })
   await router.push(url)
-  const wrapper = mount(UsersView, { global: { plugins: [router] } })
+  const wrapper = mount(UsersPage, { global: { plugins: [router, PrimeVue, ToastService] } })
   await flushPromises()
   return wrapper
 }
@@ -33,7 +35,7 @@ function rowNames(wrapper: Awaited<ReturnType<typeof mountAt>>) {
   return wrapper.findAll('tbody tr').map((row) => row.findAll('td')[1]?.text())
 }
 
-describe('UsersView', () => {
+describe('UsersPage', () => {
   beforeEach(() => {
     localStorage.clear()
     setActivePinia(createPinia())
@@ -50,13 +52,13 @@ describe('UsersView', () => {
 
     expect(rowNames(wrapper)[0]).toBe('First11 Last11')
     expect(wrapper.findAll('tbody tr')).toHaveLength(10)
-    expect(wrapper.find('.page-item.active').text()).toBe('2')
+    expect(wrapper.find('.p-paginator-page-selected').text()).toBe('2')
   })
 
   it('writes the page number to the URL when the pagination is clicked', async () => {
     const wrapper = await mountAt('/users')
 
-    const third = wrapper.findAll('.page-link').find((b) => b.text() === '3')
+    const third = wrapper.findAll('.p-paginator-page').find((b) => b.text() === '3')
     await third?.trigger('click')
     await flushPromises()
 
@@ -77,7 +79,7 @@ describe('UsersView', () => {
     }
     const wrapper = await mountAt('/users')
 
-    expect(wrapper.find('.alert-danger').text()).toContain('HTTP 500')
+    expect(wrapper.find('[role="alert"]').text()).toContain('HTTP 500')
   })
 
   it('picks at most three unique winners from the current page', async () => {

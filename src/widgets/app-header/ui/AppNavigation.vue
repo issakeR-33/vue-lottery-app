@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useRoute, type RouteLocationRaw } from 'vue-router'
+import { AppButton } from '@/shared/ui'
 import { useSessionStore } from '@/entities/session'
+import { LogoutButton } from '@/features/auth'
 
 interface NavItem {
   label: string
@@ -16,16 +19,10 @@ const items: NavItem[] = [
 ]
 
 const route = useRoute()
-const router = useRouter()
-const session = useSessionStore()
+const { isAuthenticated, user } = storeToRefs(useSessionStore())
 
 function inSection(item: NavItem): boolean {
   return Boolean(item.section && route.path.startsWith(item.section))
-}
-
-function logout(): void {
-  session.clearSession()
-  router.push({ name: 'login' })
 }
 </script>
 
@@ -48,52 +45,51 @@ function logout(): void {
         {{ item.label }}
       </a>
     </RouterLink>
-
     <div class="navigation__auth">
-      <template v-if="session.isAuthenticated">
-        <span class="navigation__user" :title="session.user?.email">
-          <i class="bi bi-person-circle"></i> {{ session.user?.firstName }}
+      <template v-if="isAuthenticated">
+        <span class="navigation__user" :title="user?.email">
+          <i class="bi bi-person-circle"></i> {{ user?.firstName }}
         </span>
-        <button type="button" class="btn btn-outline-primary btn-sm" @click="logout">Logout</button>
+        <LogoutButton />
       </template>
-      <RouterLink v-else :to="{ name: 'login' }" class="btn btn-primary btn-sm">Login</RouterLink>
+      <AppButton v-else label="Login" size="small" :to="{ name: 'login' }" />
     </div>
   </nav>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .navigation {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-}
 
-.navigation__link {
-  padding: 6px 12px;
-  color: #555;
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-}
+  &__link {
+    padding: 6px 12px;
+    color: var(--p-text-muted-color);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
 
-.navigation__link:hover {
-  color: var(--bs-primary);
-}
+    &:hover,
+    &--active {
+      color: var(--p-primary-color);
+    }
 
-.navigation__link--active {
-  color: var(--bs-primary);
-  border-bottom-color: var(--bs-primary);
-}
+    &--active {
+      border-bottom-color: var(--p-primary-color);
+    }
+  }
 
-.navigation__auth {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: 12px;
-}
+  &__auth {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 12px;
+  }
 
-.navigation__user {
-  color: #777;
+  &__user {
+    color: var(--p-text-muted-color);
+  }
 }
 </style>

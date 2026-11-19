@@ -5,29 +5,29 @@
   </RouterLink>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .logo {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #333;
+  color: var(--p-text-color);
   text-decoration: none;
-}
 
-.logo__mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  color: #fff;
-  font-size: 1.1rem;
-  background-color: var(--bs-primary);
-  border-radius: 4px;
-}
+  &__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    color: var(--p-primary-contrast-color);
+    font-size: 1.1rem;
+    background-color: var(--p-primary-color);
+    border-radius: 4px;
+  }
 
-.logo__text {
-  font-size: 1.1rem;
-  letter-spacing: 0.02em;
+  &__text {
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
 }
 </style>

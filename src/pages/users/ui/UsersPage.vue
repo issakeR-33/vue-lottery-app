@@ -1,61 +1,34 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ServiceProvider } from '@/shared/api'
-import { USER_SERVICE, type UserRepository } from '@/entities/user'
-import type { Page } from '@/shared/api'
-import { fullName, type User } from '@/entities/user'
-import type { UserFormValues } from '@/features/user-form/model/schemas'
-import { useUsersStore } from '@/entities/user'
-import { useWinnersStore } from '@/features/lottery'
-import { PAGE_SIZE, useUsersQuery } from '@/widgets/users-table/model/useUsersQuery'
-import WinnersList from '@/features/lottery/ui/WinnersList.vue'
-import UsersTable from '@/widgets/users-table/ui/UsersTable.vue'
-import BasePagination from '@/shared/ui/BasePagination/BasePagination.vue'
-import UserForm from '@/features/user-form/ui/UserForm.vue'
-import ConfirmDeleteModal from '@/widgets/users-table/ui/ConfirmDeleteModal.vue'
+import { storeToRefs } from 'pinia'
+import { AppButton, AppCard, AppMessage, AppPaginator, useNotify } from '@/shared/ui'
+import { fullName, useUsersStore } from '@/entities/user'
+import { WinnersList } from '@/features/lottery'
+import { UserForm, type UserFormValues } from '@/features/user-form'
+import { PAGE_SIZE, UsersTable, useUsersQuery } from '@/widgets/users-table'
 
+// сторінка не звертається до сервісів: дані й дії беруться зі стору users
 const store = useUsersStore()
-const winners = useWinnersStore()
+const { users, total, isLoading, error, listQuery } = storeToRefs(store)
+const { fetchUsers, createUser } = store
+
+const notify = useNotify()
 const { page, search, sort, order, params, setPage, setSearch, toggleSort } = useUsersQuery()
 
-const result = ref<Page<User> | null>(null)
-const isLoading = ref(false)
-const error = ref<string | null>(null)
-
-// відповідь застарілого запиту (користувач уже перейшов на іншу сторінку) ігнорується
-let lastRequest = 0
-
-async function loadUsers(): Promise<void> {
-  const request = ++lastRequest
-  isLoading.value = true
-  error.value = null
-  try {
-    const data = search.value
-      ? await ServiceProvider.get<UserRepository>(USER_SERVICE).search(search.value, params.value)
-      : await ServiceProvider.get<UserRepository>(USER_SERVICE).getAll(params.value)
-    if (request === lastRequest) result.value = data
-  } catch (e) {
-    if (request === lastRequest) error.value = (e as Error).message
-  } finally {
-    if (request === lastRequest) isLoading.value = false
-  }
+function load(): Promise<void> {
+  return fetchUsers(params.value, search.value)
 }
 
 // дані перезавантажуються щоразу, коли змінюються query-параметри
-watch(params, loadUsers, { immediate: true })
-
-const visiblePage = computed(() =>
-  result.value ? store.applyLocalChanges(result.value, search.value) : null,
-)
-const users = computed(() => visiblePage.value?.items ?? [])
+watch([params, search], load, { immediate: true })
 
 // запам'ятовуємо стан списку, щоб сторінка учасника повертала саме сюди
 const route = useRoute()
 watch(
   () => route.query,
   (query) => {
-    store.listQuery = query
+    listQuery.value = query
   },
   { immediate: true },
 )
@@ -64,123 +37,70 @@ const form = useTemplateRef('form')
 const isCreating = ref(false)
 const createError = ref<string | null>(null)
 
-async function createUser(values: UserFormValues): Promise<void> {
+async function onCreate(values: UserFormValues): Promise<void> {
   isCreating.value = true
   createError.value = null
   try {
-    const user = await store.createUser(values)
+    const user = await createUser(values)
     form.value?.reset()
-    store.notify(`Учасника ${fullName(user)} додано`)
+    notify.success('Учасника додано', fullName(user))
   } catch (e) {
     createError.value = (e as Error).message
+    notify.error('Не вдалося додати учасника', createError.value)
   } finally {
     isCreating.value = false
-  }
-}
-
-const deleting = ref<User | null>(null)
-const isDeleteOpen = ref(false)
-const isDeleting = ref(false)
-
-function askDelete(user: User): void {
-  deleting.value = user
-  isDeleteOpen.value = true
-}
-
-async function deleteUser(user: User): Promise<void> {
-  isDeleting.value = true
-  try {
-    await store.removeUser(user.id)
-    winners.remove(user.id)
-    store.notify(`Учасника ${fullName(user)} видалено`)
-  } catch (e) {
-    error.value = (e as Error).message
-  } finally {
-    isDeleting.value = false
-    isDeleteOpen.value = false
   }
 }
 </script>
 
 <template>
   <div class="users-page">
-    <WinnersList
-      :winners="winners.winners"
-      :can-pick-winner="winners.canPick(users)"
-      @pick="winners.pick(users)"
-      @remove="winners.remove"
-    />
+    <WinnersList :pool="users" />
 
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">REGISTER FORM</h5>
-        <p class="hint">Please fill in all the fields.</p>
-        <UserForm
-          ref="form"
-          mode="create"
-          submit-label="Save"
-          :submitting="isCreating"
-          :server-error="createError"
-          @submit="createUser"
+    <AppCard>
+      <h5 class="card-title">REGISTER FORM</h5>
+      <p class="hint">Please fill in all the fields.</p>
+      <UserForm
+        ref="form"
+        mode="create"
+        submit-label="Save"
+        :submitting="isCreating"
+        :server-error="createError"
+        @submit="onCreate"
+      />
+    </AppCard>
+
+    <AppCard>
+      <AppMessage v-if="error">
+        Не вдалося завантажити учасників: {{ error }}
+        <AppButton
+          label="Спробувати ще"
+          size="small"
+          severity="danger"
+          variant="outlined"
+          class="retry"
+          @click="load"
         />
+      </AppMessage>
+      <UsersTable
+        :users="users"
+        :start-index="(page - 1) * PAGE_SIZE"
+        :search="search"
+        :sort="sort"
+        :order="order"
+        :loading="isLoading"
+        @sort="toggleSort"
+        @search="setSearch"
+      />
+      <div class="users-page__footer">
+        <span class="text-muted">Усього: {{ total }}</span>
+        <AppPaginator :page="page" :total="total" :page-size="PAGE_SIZE" @change="setPage" />
       </div>
-    </div>
-
-    <div v-if="store.notice" class="alert alert-success" role="status">{{ store.notice }}</div>
-
-    <div class="card">
-      <div class="card-body">
-        <UsersTable
-          :users="users"
-          :start-index="(page - 1) * PAGE_SIZE"
-          :search="search"
-          :sort="sort"
-          :order="order"
-          @sort="toggleSort"
-          @search="setSearch"
-          @delete="askDelete"
-        />
-
-        <div v-if="isLoading" class="state" role="status">
-          <span class="spinner-border spinner-border-sm state__spinner"></span>
-          Завантаження...
-        </div>
-        <div v-else-if="error" class="alert alert-danger state-alert" role="alert">
-          Не вдалося завантажити учасників: {{ error }}
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-danger state-alert__retry"
-            @click="loadUsers"
-          >
-            Спробувати ще
-          </button>
-        </div>
-        <p v-else-if="users.length === 0" class="state">
-          {{ search ? 'Нікого не знайдено' : 'Список учасників пустий' }}
-        </p>
-
-        <div v-if="visiblePage" class="users-page__footer">
-          <span class="users-page__total">Усього: {{ visiblePage.total }}</span>
-          <BasePagination
-            :page="page"
-            :total="visiblePage.total"
-            :page-size="PAGE_SIZE"
-            @change="setPage"
-          />
-        </div>
-      </div>
-    </div>
-
-    <ConfirmDeleteModal
-      v-model:open="isDeleteOpen"
-      :user="deleting"
-      :deleting="isDeleting"
-      @confirm="deleteUser"
-    />
+    </AppCard>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .card-title {
   margin-bottom: 2px;
   font-size: 1rem;
@@ -189,30 +109,11 @@ async function deleteUser(user: User): Promise<void> {
 
 .hint {
   margin-bottom: 18px;
-  color: #98a6ad;
-  font-size: 1rem;
+  color: var(--p-text-muted-color);
 }
 
-.state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 0;
-  padding: 24px 0 8px;
-  color: #6c757d;
-}
-
-.state__spinner {
-  color: var(--bs-primary);
-}
-
-.state-alert__retry {
+.retry {
   margin-left: 8px;
-}
-
-.state-alert {
-  margin: 16px 0 0;
 }
 
 .users-page__footer {
@@ -222,9 +123,5 @@ async function deleteUser(user: User): Promise<void> {
   justify-content: space-between;
   gap: 12px;
   margin-top: 16px;
-}
-
-.users-page__total {
-  color: #98a6ad;
 }
 </style>

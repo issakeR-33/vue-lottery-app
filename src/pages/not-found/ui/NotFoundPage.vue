@@ -1,12 +1,16 @@
+<script setup lang="ts">
+import { AppButton, AppCard } from '@/shared/ui'
+</script>
+
 <template>
-  <div class="card">
-    <div class="card-body not-found">
+  <AppCard>
+    <div class="not-found">
       <p class="not-found__code">404</p>
       <h1 class="not-found__title">Сторінку не знайдено</h1>
       <p class="not-found__text">Такої адреси в застосунку немає.</p>
-      <RouterLink :to="{ name: 'home' }" class="btn btn-primary">На головну</RouterLink>
+      <AppButton label="На головну" :to="{ name: 'home' }" />
     </div>
-  </div>
+  </AppCard>
 </template>
 
 <style scoped>
@@ -17,7 +21,7 @@
 
 .not-found__code {
   margin: 0;
-  color: var(--bs-primary);
+  color: var(--p-primary-color);
   font-size: 4rem;
   font-weight: 700;
   line-height: 1;
@@ -30,6 +34,6 @@
 }
 
 .not-found__text {
-  color: #98a6ad;
+  color: var(--p-text-muted-color);
 }
 </style>

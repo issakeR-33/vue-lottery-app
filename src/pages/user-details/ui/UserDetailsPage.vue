@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUsersStore } from '@/entities/user'
+import { storeToRefs } from 'pinia'
+import {
+  AppButton,
+  AppCard,
+  AppConfirmDialog,
+  AppMessage,
+  AppSpinner,
+  useNotify,
+} from '@/shared/ui'
+import { fullName, useUsersStore, type User } from '@/entities/user'
 import { useWinnersStore } from '@/features/lottery'
-import { fullName, type User } from '@/entities/user'
-import BaseButton from '@/shared/ui/BaseButton/BaseButton.vue'
-import ConfirmDeleteModal from '@/widgets/users-table/ui/ConfirmDeleteModal.vue'
 
 // id приходить з маршруту /users/:id через props: true
 const props = defineProps<{
@@ -13,32 +19,21 @@ const props = defineProps<{
 }>()
 
 const store = useUsersStore()
+const { current: user, isCurrentLoading, currentError, listQuery } = storeToRefs(store)
 const winners = useWinnersStore()
+const notify = useNotify()
 const route = useRoute()
 const router = useRouter()
 
-const user = ref<User | null>(null)
-const isLoading = ref(false)
-const error = ref<string | null>(null)
-
-async function loadUser(): Promise<void> {
-  isLoading.value = true
-  error.value = null
-  try {
-    user.value = await store.getUser(Number(props.id))
-  } catch (e) {
-    user.value = null
-    error.value = (e as Error).message
-  } finally {
-    isLoading.value = false
-  }
-}
-
 // той самий компонент перевикористовується при переході між /users/1 і /users/2
-watch(() => props.id, loadUser, { immediate: true })
+watch(
+  () => props.id,
+  (id) => store.fetchUser(Number(id)),
+  { immediate: true },
+)
 
 const isEditing = computed(() => route.name === 'user-edit')
-const backToList = computed(() => ({ name: 'users', query: store.listQuery }))
+const backToList = computed(() => ({ name: 'users', query: listQuery.value }))
 
 const details = computed(() => {
   const u = user.value
@@ -59,27 +54,27 @@ const details = computed(() => {
   ].filter((item) => Boolean(item.value))
 })
 
+// стор уже оновив current, лишається синхронізувати переможців і повернутися до профілю
 function onSaved(updated: User): void {
-  user.value = updated
   winners.sync(updated)
-  store.notify('Дані учасника оновлено')
+  notify.success('Дані учасника оновлено', fullName(updated))
   router.push({ name: 'user', params: { id: updated.id } })
 }
 
 const isDeleteOpen = ref(false)
 const isDeleting = ref(false)
-const deleteError = ref<string | null>(null)
 
-async function deleteUser(target: User): Promise<void> {
+async function confirmDelete(): Promise<void> {
+  const target = user.value
+  if (!target) return
   isDeleting.value = true
-  deleteError.value = null
   try {
     await store.removeUser(target.id)
     winners.remove(target.id)
-    store.notify(`Учасника ${fullName(target)} видалено`)
+    notify.success('Учасника видалено', fullName(target))
     await router.push(backToList.value)
   } catch (e) {
-    deleteError.value = (e as Error).message
+    notify.error('Не вдалося видалити учасника', (e as Error).message)
   } finally {
     isDeleting.value = false
     isDeleteOpen.value = false
@@ -93,22 +88,15 @@ async function deleteUser(target: User): Promise<void> {
       <i class="bi bi-arrow-left"></i> До списку учасників
     </RouterLink>
 
-    <div v-if="store.notice" class="alert alert-success" role="status">{{ store.notice }}</div>
+    <AppCard>
+      <AppSpinner v-if="isCurrentLoading" />
 
-    <div class="card">
-      <div v-if="isLoading" class="card-body state" role="status">
-        <span class="spinner-border spinner-border-sm state__spinner"></span>
-        Завантаження...
-      </div>
+      <template v-else-if="currentError">
+        <AppMessage>Не вдалося завантажити учасника: {{ currentError }}</AppMessage>
+        <AppButton label="До списку" :to="backToList" />
+      </template>
 
-      <div v-else-if="error" class="card-body">
-        <div class="alert alert-danger" role="alert">
-          Не вдалося завантажити учасника: {{ error }}
-        </div>
-        <RouterLink :to="backToList" class="btn btn-primary">До списку</RouterLink>
-      </div>
-
-      <div v-else-if="user" class="card-body">
+      <template v-else-if="user">
         <div class="profile">
           <img v-if="user.image" :src="user.image" :alt="fullName(user)" class="profile__avatar" />
           <span v-else class="profile__avatar profile__avatar--initials">
@@ -119,19 +107,20 @@ async function deleteUser(target: User): Promise<void> {
             <p class="profile__meta">@{{ user.username }} · #{{ user.id }}</p>
           </div>
           <div v-if="!isEditing" class="profile__actions">
-            <RouterLink
+            <AppButton
+              label="Редагувати"
+              icon="bi bi-pencil"
               :to="{ name: 'user-edit', params: { id: user.id } }"
-              class="btn btn-primary"
-            >
-              <i class="bi bi-pencil"></i> Редагувати
-            </RouterLink>
-            <BaseButton variant="secondary" @click="isDeleteOpen = true">
-              <i class="bi bi-trash"></i> Видалити
-            </BaseButton>
+            />
+            <AppButton
+              label="Видалити"
+              icon="bi bi-trash"
+              severity="danger"
+              variant="outlined"
+              @click="isDeleteOpen = true"
+            />
           </div>
         </div>
-
-        <div v-if="deleteError" class="alert alert-danger" role="alert">{{ deleteError }}</div>
 
         <dl v-if="!isEditing" class="info-list">
           <template v-for="item in details" :key="item.label">
@@ -142,40 +131,32 @@ async function deleteUser(target: User): Promise<void> {
 
         <!-- вкладений маршрут /users/:id/edit рендериться тут -->
         <RouterView :user="user" @saved="onSaved" />
-      </div>
-    </div>
+      </template>
+    </AppCard>
 
-    <ConfirmDeleteModal
-      v-model:open="isDeleteOpen"
-      :user="user"
-      :deleting="isDeleting"
-      @confirm="deleteUser"
-    />
+    <AppConfirmDialog
+      v-model:visible="isDeleteOpen"
+      header="Видалення учасника"
+      :loading="isDeleting"
+      @confirm="confirmDelete"
+    >
+      <template v-if="user">
+        Ви дійсно бажаєте видалити учасника "{{ fullName(user) }}", "{{ user.email }}"?
+      </template>
+    </AppConfirmDialog>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .back-link {
   display: inline-block;
   margin-bottom: 14px;
-  color: #98a6ad;
+  color: var(--p-text-muted-color);
   text-decoration: none;
-}
 
-.back-link:hover {
-  color: var(--bs-primary);
-}
-
-.state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #6c757d;
-}
-
-.state__spinner {
-  color: var(--bs-primary);
+  &:hover {
+    color: var(--p-primary-color);
+  }
 }
 
 .profile {
@@ -184,45 +165,45 @@ async function deleteUser(target: User): Promise<void> {
   align-items: center;
   gap: 16px;
   margin-bottom: 20px;
-}
 
-.profile__avatar {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
-  background-color: #f4f4f4;
-  border-radius: 50%;
-}
+  &__avatar {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    background-color: var(--p-content-hover-background);
+    border-radius: 50%;
 
-.profile__avatar--initials {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.4rem;
-  font-weight: 700;
-  background-color: var(--bs-primary);
-}
+    &--initials {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--p-primary-contrast-color);
+      font-size: 1.4rem;
+      font-weight: 700;
+      background-color: var(--p-primary-color);
+    }
+  }
 
-.profile__main {
-  flex: 1;
-  min-width: 200px;
-}
+  &__main {
+    flex: 1;
+    min-width: 200px;
+  }
 
-.profile__name {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-}
+  &__name {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
 
-.profile__meta {
-  margin: 0;
-  color: #98a6ad;
-}
+  &__meta {
+    margin: 0;
+    color: var(--p-text-muted-color);
+  }
 
-.profile__actions {
-  display: flex;
-  gap: 8px;
+  &__actions {
+    display: flex;
+    gap: 8px;
+  }
 }
 
 .info-list {
@@ -230,14 +211,14 @@ async function deleteUser(target: User): Promise<void> {
   grid-template-columns: 9rem 1fr;
   gap: 8px 16px;
   margin: 0;
-}
 
-.info-list dt {
-  color: #98a6ad;
-  font-weight: 600;
-}
+  dt {
+    color: var(--p-text-muted-color);
+    font-weight: 600;
+  }
 
-.info-list dd {
-  margin: 0;
+  dd {
+    margin: 0;
+  }
 }
 </style>

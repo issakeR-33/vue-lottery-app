@@ -40,17 +40,6 @@ export const useUsersStore = defineStore(
     // query списку (сторінка, пошук), щоб повернутися на той самий стан зі сторінки учасника
     const listQuery = ref<LocationQuery>({})
 
-    const notice = ref<string | null>(null)
-    let noticeTimer: ReturnType<typeof setTimeout> | undefined
-
-    function notify(message: string): void {
-      notice.value = message
-      clearTimeout(noticeTimer)
-      noticeTimer = setTimeout(() => {
-        notice.value = null
-      }, 4000)
-    }
-
     const visiblePage = computed(() =>
       page.value ? applyLocalChanges(page.value, query.value) : null,
     )
@@ -174,8 +163,6 @@ export const useUsersStore = defineStore(
       updated,
       deletedIds,
       listQuery,
-      notice,
-      notify,
       applyLocalChanges,
       fetchUsers,
       getUser,

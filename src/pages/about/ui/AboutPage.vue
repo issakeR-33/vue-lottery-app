@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { AppButton, AppCard } from '@/shared/ui'
+
 const student = {
   fullName: 'Мельник Іван Іванович',
   group: 'Група 343А(1)',
@@ -8,7 +10,7 @@ const student = {
 
 const skills = [
   { area: 'Frontend', items: ['HTML5', 'CSS3 / SCSS', 'JavaScript (ES2023)', 'TypeScript'] },
-  { area: 'Фреймворки', items: ['Vue 3', 'Vue Router', 'Pinia', 'Bootstrap'] },
+  { area: 'Фреймворки', items: ['Vue 3', 'Vue Router', 'Pinia', 'PrimeVue'] },
   {
     area: 'Інструменти',
     items: ['Git, GitHub Actions', 'Vite, webpack', 'ESLint, Prettier', 'Vitest'],
@@ -17,26 +19,22 @@ const skills = [
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-body">
-      <h1 class="page-title">{{ student.fullName }}</h1>
-      <p class="subtitle">{{ student.group }} · {{ student.university }}</p>
+  <AppCard>
+    <h1 class="page-title">{{ student.fullName }}</h1>
+    <p class="subtitle">{{ student.group }} · {{ student.university }}</p>
 
-      <h2 class="section-title">Technical skills</h2>
-      <div class="skills">
-        <section v-for="group in skills" :key="group.area" class="skills__group">
-          <h3 class="skills__area">{{ group.area }}</h3>
-          <ul class="skills__list">
-            <li v-for="skill in group.items" :key="skill" class="skills__item">{{ skill }}</li>
-          </ul>
-        </section>
-      </div>
-
-      <a class="btn btn-primary" :href="student.github" target="_blank" rel="noopener">
-        <i class="bi bi-github"></i> GitHub
-      </a>
+    <h2 class="section-title">Technical skills</h2>
+    <div class="skills">
+      <section v-for="group in skills" :key="group.area" class="skills__group">
+        <h3 class="skills__area">{{ group.area }}</h3>
+        <ul class="skills__list">
+          <li v-for="skill in group.items" :key="skill" class="skills__item">{{ skill }}</li>
+        </ul>
+      </section>
     </div>
-  </div>
+
+    <AppButton label="GitHub" icon="bi bi-github" :href="student.github" />
+  </AppCard>
 </template>
 
 <style scoped>
@@ -47,7 +45,7 @@ const skills = [
 }
 
 .subtitle {
-  color: #98a6ad;
+  color: var(--p-text-muted-color);
 }
 
 .section-title {
@@ -68,7 +66,7 @@ const skills = [
   margin-bottom: 8px;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #555;
+  color: var(--p-text-muted-color);
 }
 
 .skills__list {
@@ -82,9 +80,9 @@ const skills = [
 
 .skills__item {
   padding: 2px 8px;
-  color: var(--bs-primary);
+  color: var(--p-primary-color);
   font-size: 0.85rem;
-  border: 1px solid var(--bs-primary);
+  border: 1px solid var(--p-primary-color);
   border-radius: 2px;
 }
 </style>

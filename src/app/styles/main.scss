@@ -1,62 +1,70 @@
-@import 'bootstrap/scss/functions';
+// Глобальні стилі застосунку. Компоненти й кольори дає тема PrimeVue (app/providers/ui.ts),
+// тут лише мінімальний reset, шрифт і фон сторінки. Кольори беруться з токенів теми
+// (--p-...), тому однаково працюють у світлій і темній темі.
 
-// Кольори й розміри з дизайну лабораторної
-$primary: #3bafda;
-$body-color: #333;
-$font-family-sans-serif:
+$font-family:
   'Open Sans',
   system-ui,
   -apple-system,
   'Segoe UI',
   Roboto,
   sans-serif;
-$font-size-base: 0.9375rem;
-$border-color: #e5e5e5;
-$border-radius: 3px;
-$border-radius-sm: 2px;
-$border-radius-lg: 4px;
-$input-bg: #f9f9f9;
-$input-border-color: #ebebeb;
-$input-placeholder-color: #9a9a9a;
-$card-border-color: #e5e5e5;
-$card-spacer-y: 1.25rem;
-$card-spacer-x: 1.25rem;
-// білий текст на світло-синіх кнопках, як у дизайні
-$min-contrast-ratio: 2.3;
 
-@import 'bootstrap/scss/variables';
-@import 'bootstrap/scss/variables-dark';
-@import 'bootstrap/scss/maps';
-@import 'bootstrap/scss/mixins';
-@import 'bootstrap/scss/root';
-@import 'bootstrap/scss/reboot';
-@import 'bootstrap/scss/type';
-@import 'bootstrap/scss/forms';
-@import 'bootstrap/scss/buttons';
-@import 'bootstrap/scss/card';
-@import 'bootstrap/scss/tables';
-@import 'bootstrap/scss/modal';
-@import 'bootstrap/scss/close';
-@import 'bootstrap/scss/transitions';
-@import 'bootstrap/scss/pagination';
-@import 'bootstrap/scss/alert';
-@import 'bootstrap/scss/spinners';
+:root {
+  --app-page-bg: #f4f4f4;
+  --app-max-width: 832px;
+}
+
+:root.app-dark {
+  --app-page-bg: var(--p-surface-950);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
-  background-color: #f4f4f4;
+  margin: 0;
+  color: var(--p-text-color);
+  font-family: $font-family;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  background-color: var(--app-page-bg);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+ul,
+dl {
+  margin-top: 0;
+}
+
+a {
+  color: var(--p-primary-color);
+}
+
+code {
+  font-size: 0.875em;
+  color: var(--p-primary-700);
 }
 
 .app {
-  max-width: 832px;
+  max-width: var(--app-max-width);
   margin: 0 auto;
   padding: 32px 16px 64px;
 }
 
-.card {
-  margin-bottom: 18px;
-}
-
-.btn {
-  padding: 5px 20px;
-  font-weight: 600;
+// приглушений текст підказок
+.text-muted {
+  color: var(--p-text-muted-color);
 }
