@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLogo from '@/widgets/app-header/ui/AppLogo.vue'
+import { AppLogo } from '@/widgets/app-header'
 </script>
 
 <template>

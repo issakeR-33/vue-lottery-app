@@ -18,18 +18,18 @@ declare module 'vue-router' {
   }
 }
 
-// сторінки завантажуються ліниво, кожна потрапляє в окремий чанк
+// сторінки завантажуються ліниво через Public API слайсу, кожна потрапляє в окремий чанк
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: () => import('@/pages/home/ui/HomePage.vue'),
+    component: () => import('@/pages/home').then((m) => m.HomePage),
     meta: { title: 'Home' },
   },
   {
     path: '/about',
     name: 'about',
-    component: () => import('@/pages/about/ui/AboutPage.vue'),
+    component: () => import('@/pages/about').then((m) => m.AboutPage),
     meta: { title: 'About author' },
   },
   {
@@ -39,14 +39,14 @@ export const routes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'users',
-        component: () => import('@/pages/users/ui/UsersPage.vue'),
+        component: () => import('@/pages/users').then((m) => m.UsersPage),
         meta: { title: 'Users' },
       },
       {
         // динамічний сегмент, id передається в компонент як prop
         path: ':id(\\d+)',
         name: 'user',
-        component: () => import('@/pages/user-details/ui/UserDetailsPage.vue'),
+        component: () => import('@/pages/user-details').then((m) => m.UserDetailsPage),
         props: true,
         meta: { title: 'Профіль учасника' },
         children: [
@@ -54,7 +54,7 @@ export const routes: RouteRecordRaw[] = [
             // вкладений маршрут рендериться в <RouterView> сторінки учасника
             path: 'edit',
             name: 'user-edit',
-            component: () => import('@/pages/user-details/ui/UserEditPage.vue'),
+            component: () => import('@/pages/user-details').then((m) => m.UserEditPage),
             meta: { title: 'Редагування учасника' },
           },
         ],
@@ -64,13 +64,13 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('@/pages/login/ui/LoginPage.vue'),
+    component: () => import('@/pages/login').then((m) => m.LoginPage),
     meta: { title: 'Login', layout: 'auth', guestOnly: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
-    component: () => import('@/pages/not-found/ui/NotFoundPage.vue'),
+    component: () => import('@/pages/not-found').then((m) => m.NotFoundPage),
     meta: { title: 'Сторінку не знайдено' },
   },
 ]

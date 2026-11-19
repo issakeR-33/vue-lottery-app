@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { routes } from '../index'
-import { checkAccess, safeRedirect } from '../guards'
+import { checkAccess } from '../guards'
+import { safeRedirect } from '@/shared/lib'
 
 // той самий список маршрутів, що й у застосунку, але з історією в пам'яті
 async function navigate(path: string, isAuthenticated: boolean) {

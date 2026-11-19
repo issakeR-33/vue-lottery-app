@@ -1,16 +1,7 @@
 import { z } from 'zod'
+import { password, PASSWORD_MIN_LENGTH, REQUIRED, requiredText } from '@/shared/lib'
 
-export const PASSWORD_MIN_LENGTH = 6
-
-const REQUIRED = "Обов'язкове поле"
 const PHONE_PATTERN = /^\+?[\d\s()-]{7,20}$/
-
-const requiredText = (max = 50) =>
-  z
-    .string({ required_error: REQUIRED })
-    .trim()
-    .min(1, REQUIRED)
-    .max(max, `Не більше ${max} символів`)
 
 // '' з поля type="number" перетворюємо на undefined, щоб показати "обов'язкове поле", а не "0"
 const age = z.preprocess(
@@ -36,11 +27,6 @@ const userFields = {
   phone: requiredText(20).regex(PHONE_PATTERN, 'Формат: +380 50 123 4567'),
 }
 
-const password = z
-  .string({ required_error: REQUIRED })
-  .min(1, REQUIRED)
-  .min(PASSWORD_MIN_LENGTH, `Щонайменше ${PASSWORD_MIN_LENGTH} символів`)
-
 export const createUserSchema = z.object({ ...userFields, password })
 
 // при редагуванні порожній пароль означає "не змінювати"
@@ -54,10 +40,4 @@ export const editUserSchema = z.object({
     ),
 })
 
-export const loginSchema = z.object({
-  username: requiredText(30),
-  password,
-})
-
 export type UserFormValues = z.infer<typeof createUserSchema>
-export type LoginFormValues = z.infer<typeof loginSchema>

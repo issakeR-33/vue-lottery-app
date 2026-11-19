@@ -5,7 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { HttpError } from '@/shared/api'
 import { AppButton, AppInput, AppMessage, useNotify } from '@/shared/ui'
 import { useSessionStore } from '@/entities/session'
-import { loginSchema, type LoginFormValues } from '@/features/user-form/model/schemas'
+import { loginSchema, type LoginFormValues } from '../model/schemas'
 
 const emit = defineEmits<{
   success: []

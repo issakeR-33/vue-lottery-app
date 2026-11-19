@@ -2,7 +2,7 @@
 import { useRoute, useRouter } from 'vue-router'
 import { AppCard } from '@/shared/ui'
 import { LoginForm } from '@/features/auth'
-import { safeRedirect } from '@/app/providers/router/guards'
+import { safeRedirect } from '@/shared/lib'
 
 const route = useRoute()
 const router = useRouter()

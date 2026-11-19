@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createUserSchema, editUserSchema, loginSchema } from '../schemas'
+import { createUserSchema, editUserSchema } from '../schemas'
+import { loginSchema } from '@/features/auth/model/schemas'
 
 const valid = {
   firstName: 'Ann',
