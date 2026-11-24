@@ -70,6 +70,15 @@ describe('UsersView', () => {
     expect(rowNames(wrapper)).toEqual(['First12 Last12'])
   })
 
+  it('reloads the list when only the search changes on the first page', async () => {
+    const wrapper = await mountAt('/users')
+    await router.replace({ query: { q: 'First12' } })
+    await flushPromises()
+
+    expect(service.calls).toEqual(['getAll', 'search:First12'])
+    expect(rowNames(wrapper)).toEqual(['First12 Last12'])
+  })
+
   it('shows the error state when the API fails', async () => {
     service.getAll = async () => {
       throw new Error('HTTP 500: Internal Server Error')

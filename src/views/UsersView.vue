@@ -39,8 +39,9 @@ async function loadUsers(): Promise<void> {
   }
 }
 
-// дані перезавантажуються щоразу, коли змінюються query-параметри
-watch(params, loadUsers, { immediate: true })
+// дані перезавантажуються щоразу, коли змінюються query-параметри;
+// search окремо, бо в params його немає і на першій сторінці params не змінюються
+watch([params, search], loadUsers, { immediate: true })
 
 const visiblePage = computed(() =>
   result.value ? store.applyLocalChanges(result.value, search.value) : null,
